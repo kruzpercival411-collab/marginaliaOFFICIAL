@@ -1,0 +1,798 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#ECEEE9">
+<title>Marginalia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Literata:ital,opsz,wght@0,7..72,400;1,7..72,400&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: editor's desk — a fixed index rail on the left, a working sheet on the right. Blue pencil is the only accent; severity uses its own semantic colors. */
+:root{
+  --bg:#ECEEE9;--surface:#F7F8F5;--sunk:#E2E5DF;--ink:#1A2130;--muted:#58606E;--line:#CBD0C8;
+  --accent:#2A4CC0;--accent-ink:#FFFFFF;--accent-soft:#DCE3F7;
+  --warn:#8F5306;--warn-soft:#F3E4C8;--crit:#A3241B;--crit-soft:#F5DCD8;--ok:#27683F;--ok-soft:#D9ECDF;--mark:#F1E19B;
+  --e-fear:#6B4FA3;--e-hope:#2F7F8C;--e-anger:#B8452E;--e-grief:#4E5D78;--e-joy:#C18A12;--e-suspicion:#7A6A2E;--e-love:#B0487A;--e-shame:#8A5A44;--e-relief:#4C8A4F;--e-quiet:#A3A9A0;
+  --f-display:'Newsreader',Georgia,'Times New Roman',serif;--f-ms:'Literata',Georgia,serif;--f-ui:'Public Sans',system-ui,-apple-system,'Segoe UI',sans-serif;--f-mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#14171D;--surface:#1B1F27;--sunk:#111419;--ink:#E4E7EC;--muted:#98A0AD;--line:#2D333D;
+  --accent:#8FA7F3;--accent-ink:#0E1424;--accent-soft:#25304C;
+  --warn:#E3AA52;--warn-soft:#3A2E1A;--crit:#F08C82;--crit-soft:#41221F;--ok:#72C795;--ok-soft:#1C3527;--mark:#4B4420;
+  --e-fear:#A58BDB;--e-hope:#64B9C6;--e-anger:#E88068;--e-grief:#93A3C2;--e-joy:#E5B84E;--e-suspicion:#C2AF68;--e-love:#E37FAE;--e-shame:#C99479;--e-relief:#83C786;--e-quiet:#5E6470;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#14171D;--surface:#1B1F27;--sunk:#111419;--ink:#E4E7EC;--muted:#98A0AD;--line:#2D333D;
+  --accent:#8FA7F3;--accent-ink:#0E1424;--accent-soft:#25304C;
+  --warn:#E3AA52;--warn-soft:#3A2E1A;--crit:#F08C82;--crit-soft:#41221F;--ok:#72C795;--ok-soft:#1C3527;--mark:#4B4420;
+  --e-fear:#A58BDB;--e-hope:#64B9C6;--e-anger:#E88068;--e-grief:#93A3C2;--e-joy:#E5B84E;--e-suspicion:#C2AF68;--e-love:#E37FAE;--e-shame:#C99479;--e-relief:#83C786;--e-quiet:#5E6470;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-ui);margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font:400 clamp(30px,4vw,40px)/1.1 var(--f-display);margin:0;letter-spacing:-.015em;text-wrap:balance}
+h2{font:600 19px/1.25 var(--f-display);margin:0;text-wrap:balance}
+h3{font:600 11px/1.3 var(--f-ui);margin:0;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+p{margin:0}
+.muted{color:var(--muted)}.small{font-size:13px}.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.stack{display:flex;flex-direction:column;gap:10px}.grow{flex:1}
+.btn{cursor:pointer;border:1px solid var(--line);background:var(--surface);padding:8px 14px;border-radius:6px;font-size:14px;line-height:1.3}
+.btn:hover{border-color:var(--muted)}.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}.btn.big{padding:11px 20px;font-size:15px;font-weight:500}
+.btn.ghost{background:transparent;border-color:transparent}.btn.ghost:hover{border-color:var(--line)}.btn.sm{padding:5px 10px;font-size:13px}.btn.danger{color:var(--crit)}
+.btn[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}.btn:disabled{opacity:.45;cursor:not-allowed}
+.linkish{all:unset;cursor:pointer;color:var(--accent)}.linkish:hover{text-decoration:underline}
+.top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:14px;padding:calc(10px + env(safe-area-inset-top,0px)) clamp(16px,3vw,32px) 10px;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);min-height:56px}
+.brand{all:unset;cursor:pointer;font:400 24px/1 var(--f-display)}.brand i{color:var(--accent)}
+.crumb{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;max-width:30vw}.crumb b{color:var(--ink);font-weight:500}
+.tabs-top{display:flex;gap:2px}.tabs-top button{all:unset;cursor:pointer;padding:7px 12px;border-radius:6px;color:var(--muted);font-size:14px}.tabs-top button:hover{color:var(--ink)}.tabs-top button[aria-current="true"]{color:var(--ink);background:var(--surface);box-shadow:inset 0 0 0 1px var(--line)}
+main{padding-block:28px 80px;padding-inline:clamp(16px,3vw,32px);min-width:0}
+.syncstat{font:500 12px/1.4 var(--f-mono);padding:3px 9px;border-radius:999px;background:var(--sunk);color:var(--muted);white-space:nowrap}.syncstat:empty{display:none}
+.syncstat[data-s=ok]{color:var(--ok);background:var(--ok-soft)}.syncstat[data-s=busy]{color:var(--accent);background:var(--accent-soft)}.syncstat[data-s=bad]{color:var(--crit);background:var(--crit-soft)}
+.presmini{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.presmini.m{padding:8px 18px 0}
+.pchip{display:inline-flex;gap:6px;align-items:center;font-size:12px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px 10px}.pchip small{color:var(--muted);font-size:11px}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none;background:var(--e-quiet)}
+.dot.online{background:var(--ok)}.dot.idle{background:var(--e-joy)}.dot.editing,.dot.typing{background:var(--accent)}.dot.viewing{background:var(--e-hope)}.dot.offline{background:transparent;box-shadow:inset 0 0 0 1.5px var(--muted)}
+.dot.typing{animation:pulse 1s infinite}@keyframes pulse{50%{opacity:.35}}
+.home{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:34px}
+.hhead{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px}
+.home section{display:flex;flex-direction:column;gap:14px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:14px}
+.pcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.pc-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}.pc-top h3{font:600 20px/1.25 var(--f-display);text-transform:none;letter-spacing:0;color:var(--ink);overflow-wrap:anywhere}
+.pc-meta{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--muted)}
+.authors{display:flex;flex-wrap:wrap;gap:6px}.achip{font-size:13px;background:var(--sunk);padding:2px 9px;border-radius:999px}.live{display:flex;gap:6px;align-items:center}.live:empty{display:none}
+.bar{height:6px;background:var(--sunk);border-radius:3px;overflow:hidden}.bar i{display:block;height:100%;background:var(--accent)}.bar.big{height:10px;margin-top:8px}
+.empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:10px}
+.write{display:grid;grid-template-columns:250px minmax(0,1fr);gap:28px;align-items:start}.write.with-panel{grid-template-columns:230px minmax(0,1fr) 320px}
+.chl{position:sticky;top:76px;display:flex;flex-direction:column;gap:8px;max-height:calc(100vh - 96px);overflow:auto}
+.chl-h{display:flex;justify-content:space-between;align-items:center;padding:0 4px}
+.chl ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px}
+.chl li{display:flex;align-items:center;gap:2px;border-radius:6px}.chl li.over{box-shadow:inset 0 2px 0 var(--accent)}.chl li.dragging{opacity:.4}
+.chi{all:unset;box-sizing:border-box;cursor:pointer;flex:1;min-width:0;display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:baseline;padding:8px;border-radius:6px;font-size:14px}
+.chi:hover{background:var(--surface)}.chi[aria-current="true"]{background:var(--surface);box-shadow:inset 2px 0 0 var(--accent)}
+.chi .n{color:var(--muted);font-size:11px}.chi .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.chi .w{color:var(--muted);font-size:11px}.chi .ok{color:var(--ok)}
+.chi .here{display:inline-flex;gap:2px;margin-left:6px;vertical-align:middle}.mg{display:flex}.chl-f{padding:4px 8px}
+.wmain{min-width:0;display:flex;flex-direction:column;gap:12px}
+.wbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:36px}
+.page{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:clamp(20px,4vw,56px) clamp(16px,5vw,72px);min-width:0}
+.ctitle{all:unset;box-sizing:border-box;display:block;width:100%;max-width:68ch;margin:0 auto 18px;font:400 32px/1.2 var(--f-display)}
+.page textarea{display:block;width:100%;max-width:68ch;margin:0 auto;min-height:60vh;border:0;background:transparent;resize:none;line-height:1.8;font-family:var(--f-ms);color:var(--ink);outline:none;overflow:hidden}
+.note{font-size:13px;padding:10px 14px;border-radius:8px;background:var(--sunk);display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}.warnbg{background:var(--warn-soft);color:var(--warn)}
+.drawer{position:sticky;top:76px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;max-height:calc(100vh - 96px);overflow:auto;display:flex;flex-direction:column;gap:12px}
+.dhead{display:flex;justify-content:space-between;align-items:center}
+.cm{border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:6px}.cm.resolved{opacity:.7}.cmbody{font-size:14px;white-space:pre-wrap}
+.cm q,.excerpt q{font-family:var(--f-ms);font-style:italic}.excerpt{font:15px/1.6 var(--f-ms);color:var(--muted)}
+.reply{margin-left:10px;padding-left:10px;border-left:2px solid var(--line)}.mention{color:var(--accent)}.mentions{display:flex;flex-wrap:wrap;gap:4px}
+.ver{border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:6px}
+.diffbox{border:1px solid var(--line);padding:10px;max-height:340px;overflow:auto;font:14px/1.6 var(--f-ms);background:var(--bg);border-radius:6px}.diffbox p{margin:0 0 8px;white-space:pre-wrap}.diffbox .ins{background:var(--ok-soft)}.diffbox .del{background:var(--crit-soft);text-decoration:line-through}
+.cmpbox{display:flex;flex-direction:column;gap:6px}
+.narrow{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.sheet{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;min-width:0}details.sheet summary{cursor:pointer}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:2px}.tile b{font:400 30px/1.1 var(--f-display);font-variant-numeric:tabular-nums}.tile span{font-size:13px;color:var(--muted)}
+.sheet .tile{background:var(--bg)}
+label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--muted)}
+label.f input,label.f select,label.f textarea,.inp,textarea.out{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:9px 11px;color:var(--ink);font-size:15px;width:100%}
+textarea.out{min-height:40vh;font:12px/1.5 var(--f-mono)}
+.formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px}
+.person{display:flex;gap:10px;align-items:flex-start;padding:6px 0}.person .dot{margin-top:7px}
+.code{background:var(--sunk);padding:2px 8px;border-radius:4px;letter-spacing:.1em}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.choose{all:unset;box-sizing:border-box;cursor:pointer;border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:4px;background:var(--bg)}.choose span{font-size:13px;color:var(--muted)}
+.choose[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--accent-soft)}.choose[disabled]{opacity:.5;cursor:not-allowed}
+.sres{display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--line);padding-top:8px}.hit{display:block;color:var(--ink);font-family:var(--f-ms)}
+.mrow{all:unset;box-sizing:border-box;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px;border:1px solid var(--line);background:var(--surface);border-radius:8px;font-size:15px;width:100%}.mrow.danger{color:var(--crit)}
+.modal{position:fixed;inset:0;background:color-mix(in srgb,var(--ink) 35%,transparent);display:flex;align-items:flex-start;justify-content:center;padding:8vh 16px;z-index:50;overflow:auto}
+.modal .box{background:var(--surface);border:1px solid var(--line);border-radius:12px;width:min(640px,100%);padding:22px;display:flex;flex-direction:column;gap:14px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.mhead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.modal.wide .box{width:min(900px,100%)}
+.modal.msheet{align-items:flex-end;padding:0}.modal.msheet .box{width:100%;max-height:88vh;overflow:auto;border-radius:16px 16px 0 0;padding:16px 16px calc(24px + env(safe-area-inset-bottom,0px))}
+.toast{position:fixed;bottom:calc(76px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;z-index:60;max-width:calc(100% - 32px)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:14px}
+code{font-family:var(--f-mono);font-size:12px}
+/* phone */
+body.phonewrite .top{display:none}body.phonewrite main{padding:0}
+.m-ed{display:flex;flex-direction:column;min-height:100vh;background:var(--surface)}
+.m-top{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:8px;padding:calc(8px + env(safe-area-inset-top,0px)) 12px 8px;background:var(--surface);border-bottom:1px solid var(--line)}
+.m-title{all:unset;cursor:pointer;flex:1;min-width:0;display:flex;flex-direction:column}.m-title b{font:600 18px/1.3 var(--f-display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m-meta{display:flex;gap:6px;padding:8px 18px 0;flex-wrap:wrap}
+.m-text{display:block;border:0;background:transparent;padding:10px 18px 150px;font-family:var(--f-ms);line-height:1.75;color:var(--ink);resize:none;outline:none;width:100%;min-height:72vh;overflow:hidden}
+.m-bar{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:space-around;background:var(--surface);border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom,0px));z-index:20}
+.m-bar button{all:unset;cursor:pointer;padding:12px 6px;font-size:14px;white-space:nowrap;color:var(--ink);border-radius:6px;text-align:center;flex:1}.m-bar button[hidden]{display:none}.m-bar button:active{background:var(--sunk)}
+.msheet .chl{position:static;max-height:none}.msheet .chi{padding:12px 8px;font-size:16px}
+@media (max-width:1100px){.write.with-panel{grid-template-columns:220px minmax(0,1fr)}.write.with-panel .drawer{grid-column:1/-1;position:static;max-height:none}}
+@media (max-width:760px){.top{gap:8px;flex-wrap:wrap}.crumb{max-width:60vw}.tabs-top{order:5;width:100%}.tabs-top button{flex:1;text-align:center}input,select,textarea{font-size:16px}.choice{grid-template-columns:1fr}.write{grid-template-columns:1fr}.btn{min-height:40px}.btn.sm{min-height:34px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+mark{background:var(--mark);color:inherit}
+</style>
+
+</head><body>
+<header class="top" id="top"></header>
+<main><div id="view"></div></main>
+<div id="modalRoot"></div>
+<div id="toastRoot"></div>
+<input type="file" id="fileIn" accept=".txt,.md,.markdown,.docx,.json" hidden>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+// ============================================================================
+//  FIREBASE SETUP: paste your Firebase web config between the braces below.
+//  Firebase console → Project settings → Your apps → Web app → "Config".
+//  Leave it as null to use Marginalia for solo projects only.
+// ============================================================================
+const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyDyFiWCxPb_qtLGPFZjByHp_UA7gg-genE",
+    authDomain: "marginalia-3f2e4.firebaseapp.com",
+    projectId: "marginalia-3f2e4",
+    storageBucket: "marginalia-3f2e4.firebasestorage.app",
+    messagingSenderId: "1044723520270",
+    appId: "1:1044723520270:web:8159a9b642668a9a74bd5f"
+  };
+// Example of what it looks like once pasted:
+// const FIREBASE_CONFIG = {
+//   apiKey: "AIza...", authDomain: "your-project.firebaseapp.com", projectId: "your-project",
+//   storageBucket: "your-project.appspot.com", messagingSenderId: "123", appId: "1:123:web:abc"
+// };
+
+// ---- Firebase adapter: gives the app the same database/presence/identity interface it uses on Claude ----
+(function(){
+  const CID=Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);
+  let fs=null,uidv=null,ready=null;
+  if(FIREBASE_CONFIG&&window.firebase){
+    ready=(async()=>{try{firebase.initializeApp(FIREBASE_CONFIG);fs=firebase.firestore();try{fs.settings({ignoreUndefinedProperties:true,merge:true})}catch(e){}const cred=await firebase.auth().signInAnonymously();uidv=cred.user.uid;return true}catch(e){console.error('Firebase setup failed',e);return false}})();
+  }
+  const FP=(...s)=>new firebase.firestore.FieldPath(...s);
+  function flat(o,pre,out){for(const k of Object.keys(o)){const v=o[k];const path=pre.concat(k);if(v&&typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).length&&path.length<4)flat(v,path,out);else out.push(FP(...path),v)}return out}
+  const err=e=>{const m={'permission-denied':'invalid_argument','not-found':'invalid_argument','resource-exhausted':'resource_exhausted','unavailable':'unavailable','failed-precondition':'invalid_argument'};throw {code:m[e&&e.code]||'unavailable',message:String(e&&e.message||e)}};
+  function wrapDoc(ref){return {id:ref.id,path:ref.path,
+    get:()=>ref.get().catch(err),set:d=>ref.set(d).catch(err),delete:()=>ref.delete().catch(err),
+    update:d=>{const args=flat(d,[],[]);return args.length?ref.update(...args).catch(err):Promise.resolve()},
+    onSnapshot:(n,e)=>ref.onSnapshot({includeMetadataChanges:false},n,x=>e&&e({code:'unavailable',message:String(x)})),
+    collection:p=>wrapQ(ref.collection(p)),
+    acquire:async({holder,ttlMs})=>{const lr=fs.collection('leases').doc(ref.path.replace(/\//g,'~'));const t=Date.now(),ttl=Math.min(Math.max(ttlMs||30000,1000),600000);
+      try{return await fs.runTransaction(async tx=>{const s=await tx.get(lr);const d=s.exists?s.data():null;if(d&&d.exp>t&&d.holder!==holder)return {acquired:false};tx.set(lr,{holder,exp:t+ttl});return {acquired:true,holder}})}catch(x){err(x)}}}}
+  function wrapQ(q){return {path:q.path,where:(a,b,c)=>wrapQ(q.where(a,b,c)),orderBy:(a,b)=>wrapQ(q.orderBy(a,b)),limit:n=>wrapQ(q.limit(n)),get:()=>q.get().catch(err),
+    onSnapshot:(n,e)=>q.onSnapshot(n,x=>e&&e({code:'unavailable',message:String(x)})),doc:id=>wrapDoc(id?q.doc(id):q.doc()),add:async d=>{const r=q.doc();await r.set(d).catch(err);return wrapDoc(r)}}}
+  const db={doc:p=>wrapDoc(fs.doc(p)),collection:p=>wrapQ(fs.collection(p))};
+  // presence: one document per open tab, refreshed by the app's heartbeat, removed when the tab closes
+  let mine={},curPid=null,peersCb=null;const docsByPid={};const watching={};
+  const flushPeers=()=>{const all=[];for(const pid in docsByPid)docsByPid[pid].forEach(d=>all.push({peer:d.id,by:d.by,presence:d.p||{},updatedAt:d.ts||0,isMe:d.by===uidv,sameTab:d.id===CID,kind:'viewer',guest:false}));if(peersCb)peersCb({peers:all,joined:[],left:[],updated:[]})};
+  window.__watchPresence=pid=>{if(!fs||watching[pid])return;watching[pid]=fs.collection('projects/'+pid+'/presence').onSnapshot(s=>{docsByPid[pid]=s.docs.map(d=>({id:d.id,...d.data()})).filter(d=>Date.now()-(d.ts||0)<600000);flushPeers()},()=>{})};
+  const room={presence:async patch=>{for(const k in patch){if(patch[k]===null)delete mine[k];else mine[k]=patch[k]}const pid=mine.pid||null;
+      if(curPid&&curPid!==pid){fs.doc('projects/'+curPid+'/presence/'+CID).delete().catch(()=>{})}curPid=pid;
+      if(pid){window.__watchPresence(pid);await fs.doc('projects/'+pid+'/presence/'+CID).set({by:uidv,name:(typeof S!=='undefined'&&S&&S.name)||'',p:mine,ts:Date.now()}).catch(()=>{})}},
+    onPeers:fn=>{peersCb=fn;setTimeout(flushPeers);return()=>{}},onConnection:fn=>{const f=()=>fn(navigator.onLine);setTimeout(f);addEventListener('online',f);addEventListener('offline',f);return()=>{}},peers:()=>[],connected:()=>navigator.onLine};
+  addEventListener('pagehide',()=>{if(curPid&&fs)fs.doc('projects/'+curPid+'/presence/'+CID).delete().catch(()=>{})});
+  const names=()=>{const n={};const L=(typeof Cloud!=='undefined'&&Cloud.list)||[];L.forEach(x=>Object.entries(x.members||{}).forEach(([id,v])=>{if(v&&v.name)n[id]=v.name}));for(const pid in docsByPid)docsByPid[pid].forEach(d=>{if(d.name)n[d.by]=d.name});if(uidv&&typeof S!=='undefined'&&S&&S.name)n[uidv]=S.name;return n};
+  const COLORS=['#2A4CC0','#B0487A','#2F7F8C','#8F5306','#6B4FA3','#27683F'];const col=id=>COLORS[[...String(id)].reduce((a,c)=>a+c.charCodeAt(0),0)%COLORS.length];
+  const user={me:async()=>({id:uidv,name:(typeof S!=='undefined'&&S&&S.name)||'',color:col(uidv),avatarUrl:'',email:null,isOwner:false,canEdit:true}),id:async()=>uidv,can:async()=>true,canEdit:async()=>true,isOwner:async()=>false,
+    profiles:async ids=>{const n=names();const r={};[].concat(ids).forEach(i=>r[i]={id:i,name:n[i]||'',avatarUrl:'',color:col(i),email:null,guest:false,isMe:i===uidv});return r},search:async()=>[]};
+  window.claude={use:async name=>{if(!ready)return null;const ok=await ready;if(!ok)return null;return {db,user,room}[name]||null}};
+})();
+
+</script>
+<script>
+// ================= utilities =================
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,10);
+const wc=t=>(String(t||'').match(/[A-Za-z0-9’']+/g)||[]).length;
+const words=t=>String(t||'').toLowerCase().match(/[a-z’']+/g)||[];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const snip=(s,n=110)=>{s=String(s).replace(/\s+/g,' ').trim();return s.length>n?s.slice(0,n-1)+'…':s};
+const plural=(n,w,pl)=>`${n} ${n===1?w:(pl||w+'s')}`;
+function splitChapters(raw){
+  raw=String(raw||'').replace(/\r\n?/g,'\n');
+  const re=/^[ \t]*(?:#{1,2}[ \t]+\S.*|(?:chapter|CHAPTER|Chapter)[ \t]+[\w\-–—:.,’' ]+|PART[ \t]+\w+.*|Part[ \t]+(?:One|Two|Three|Four|Five|Six|\d+|[IVX]+)\b.*|Prologue|PROLOGUE|Epilogue|EPILOGUE|Interlude|INTERLUDE)[ \t]*$/gm;
+  const idx=[];let m;
+  while((m=re.exec(raw))){if(m[0].trim().length<=80)idx.push({at:m.index,title:m[0].replace(/^\s*#+\s*/,'').trim(),end:m.index+m[0].length})}
+  if(!idx.length)return [{title:'Chapter 1',text:raw.trim()}];
+  const out=[];const pre=raw.slice(0,idx[0].at).trim();if(pre.length>200)out.push({title:'Opening',text:pre});
+  idx.forEach((h,k)=>out.push({title:h.title,text:raw.slice(h.end,k+1<idx.length?idx[k+1].at:raw.length).trim()}));
+  return out.filter(c=>c.text.length||c.title);
+}
+const SCENE_SEP=/\n[ \t]*(?:(?:\*[ \t]*){3,}|#{1,3}|~{3,}|-{3,}|(?:•[ \t]*){3}|§|◊)[ \t]*(?=\n|$)/;
+const splitScenes=t=>String(t||'').split(SCENE_SEP).map(s=>s.trim()).filter(Boolean);
+function ctx(text,i,n=90){const s=Math.max(0,text.lastIndexOf(' ',Math.max(0,i-30)));return snip(text.slice(s,s+n),n)}
+function newProject(name){return {id:uid(),name,created:Date.now(),chapters:[],mem:{characters:[],relationships:[],locations:[],events:[],secrets:[],clues:[],objects:[],promises:[],setups:[],threads:[],themes:[],motifs:[],rules:[]},consequences:[],ideas:[],sims:[],sceneNotes:{},cols:{},settings:{target:80000}}}
+
+// ================= collaboration & sync layer =================
+// Shared projects live in the artifact's realtime db (projects/{pid}/...). Local projects stay in localStorage.
+const Cloud={db:null,user:null,room:null,me:null,canWrite:null,session:uid()+uid(),names:{},colors:{},p:null,unsubs:[],acked:{},writing:{},again:{},blocked:{},
+  lastMeta:'',lastItems:{},peers:[],err:null,inflight:0,list:[],listReady:false,dbState:'waiting',conflict:null,typing:false,editing:false,idle:false,lastInput:0,notifs:[],myNotes:[]};
+const ROLES=['owner','co-author','editor','viewer'];
+const ROLE_D={owner:'Everything, including roles and deleting the project.','co-author':'Writes and edits the manuscript and story brain.',editor:'Comments and suggests edits; cannot change text directly.',viewer:'Reads only. Can keep private notes.'};
+const PERM={edit:['owner','co-author'],memory:['owner','co-author'],comment:['owner','co-author','editor'],suggest:['owner','co-author','editor'],board:['owner','co-author','editor'],decide:['owner','co-author'],roles:['owner']};
+const PERSONAL=['dwfm','brutal','live','focus','fontSize','goal'];
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const now=()=>Date.now();
+function myId(){return Cloud.me||'me'}
+function myRole(p){if(!p||!p.cloud)return 'owner';if(Cloud.me&&p.owner===Cloud.me)return 'owner';const m=p.members&&p.members[Cloud.me];return (m&&m.role)||'viewer'}
+function allowed(p,act){return PERM[act].includes(myRole(p))&&!(p&&p.cloud&&Cloud.canWrite===false)}
+
+// ---------- names ----------
+const nameQ=new Set();let nameT;
+function nm(id){if(!id||id==='me')return 'You';if(id===Cloud.me&&!Cloud.names[id])return 'You';if(!(id in Cloud.names)){nameQ.add(id);clearTimeout(nameT);nameT=setTimeout(resolveNames,40)}return Cloud.names[id]||'Someone'}
+async function resolveNames(){if(!Cloud.user)return;const ids=[...nameQ];nameQ.clear();if(!ids.length)return;try{const ps=await Cloud.user.profiles(ids);ids.forEach(i=>{Cloud.names[i]=(ps[i]&&ps[i].name)||'';Cloud.colors[i]=ps[i]&&ps[i].color})}catch(e){ids.forEach(i=>Cloud.names[i]='')}document.querySelectorAll('[data-uid]').forEach(el=>{el.textContent=nm(el.dataset.uid)+(el.dataset.you&&el.dataset.uid===Cloud.me?' (you)':'')})}
+const who=(id,you)=>`<span data-uid="${esc(id||'')}"${you?' data-you="1"':''}>${esc(nm(id))}${you&&id===Cloud.me?' (you)':''}</span>`;
+const ago=t=>{if(!t)return '';const s=(now()-t)/1000;if(s<60)return 'just now';if(s<3600)return Math.floor(s/60)+' min ago';if(s<86400)return Math.floor(s/3600)+' h ago';return new Date(t).toLocaleDateString()};
+
+// ---------- capability bootstrap ----------
+async function initCloud(){
+  let tries=0;while(!(window.claude&&window.claude.use)&&tries<20){await sleep(250);tries++}
+  if(!(window.claude&&window.claude.use)){Cloud.dbState='absent';updateSync();return}if(!FIREBASE_CONFIG){Cloud.dbState='absent';updateSync();render();return}
+  claude.use('user').then(async u=>{Cloud.user=u;if(!u)return;const m=await u.me();Cloud.me=m.id;Cloud.names[m.id]=m.name||'';Cloud.colors[m.id]=m.color;try{Cloud.canWrite=await u.can('data.write')}catch(e){}renderPresence();if(Cloud.db)subscribeProjects()});
+  claude.use('db').then(db=>{Cloud.db=db;Cloud.dbState=db?'ready':'absent';render();if(db&&Cloud.me!==null)subscribeProjects();updateSync();if(!db&&S.active&&S.active.startsWith('cloud:')){S.active=null;view='home';render()}});
+  claude.use('room').then(r=>{Cloud.room=r;if(!r)return;r.onPeers(c=>{Cloud.peers=c.peers;renderPresence()},()=>{});r.onConnection(()=>updateSync(),()=>{});pushPresence()});
+}
+let projSub=null;
+function subscribeProjects(){if(projSub||!Cloud.db||!Cloud.me)return;subInvites();projSub=Cloud.db.collection('projects').onSnapshot(s=>{Cloud.list=s.docs.map(d=>({pid:d.id,...d.data()})).filter(x=>!x.deleted);Cloud.listReady=true;
+  if(S.active&&S.active.startsWith('cloud:')&&!Cloud.p){const pid=S.active.slice(6);if(Cloud.list.some(x=>x.pid===pid))openCloud(pid);else{S.active=null;view='home';save()}}
+  renderProjSel()},e=>{Cloud.err=e.code;updateSync()})}
+
+// ---------- open a shared project ----------
+function blankCloud(pid,meta){const p=newProject(meta.name||'Untitled');Object.assign(p,{id:'cloud:'+pid,pid,cloud:true,owner:meta.owner,members:meta.members||{},joinRole:meta.joinRole||'co-author',cols:{},loaded:{}});p.chapters=[];return p}
+function openCloud(pid){
+  closeCloud();const meta=Cloud.list.find(x=>x.pid===pid)||{};const p=blankCloud(pid,meta);Cloud.p=p;S.active='cloud:'+pid;save();
+  const D=Cloud.db,base='projects/'+pid;const sub=(q,fn)=>Cloud.unsubs.push(q.onSnapshot(fn,e=>{Cloud.err=e.code;updateSync()}));
+  sub(D.doc(base),applyMeta);
+  sub(D.collection(base+'/chapters'),applyChapters);
+  ['comments','stats'].forEach(n=>sub(D.collection(base+'/'+n),s=>applyCol(n,s)));
+  sub(D.collection(base+'/activity').orderBy('at','desc').limit(60),s=>applyCol('activity',s));
+  if(Cloud.me)sub(D.collection(base+'/notifications').where('to','==',Cloud.me),s=>applyCol('notifications',s));
+  UI.ch=lastCh(p.id);render();pushPresence();
+}
+function closeCloud(){Cloud.unsubs.forEach(u=>{try{u()}catch(e){}});Cloud.unsubs=[];Cloud.p=null;Cloud.acked={};Cloud.lastItems={};Cloud.lastMeta='';Cloud.blocked={};Cloud.conflict=null;Cloud.expSub&&Cloud.expSub();Cloud.expSub=null}
+function sharedSettings(s){const o={...s};PERSONAL.forEach(k=>delete o[k]);return o}
+function metaOf(p){return {name:p.name,settings:sharedSettings(p.settings),order:p.chapters.map(c=>c.id),sceneNotes:p.sceneNotes||{},joinRole:p.joinRole||'co-author',summary:p.summary||null}}
+function applyMeta(d){const p=Cloud.p;if(!p||!d.exists)return;if(d.metadata.hasPendingWrites)return;const m=d.data();
+  if(m.deleted){toast('This project was deleted by its owner');closeCloud();S.active=null;view='home';render();return}
+  const personal={};PERSONAL.forEach(k=>personal[k]=p.settings[k]);const pref=(S.prefs&&S.prefs[p.id])||{};
+  p.name=m.name||p.name;p.settings={...newProject('').settings,...(m.settings||{}),...personal,...pref};p.sceneNotes=m.sceneNotes||{};p.owner=m.owner;p.members=m.members||{};p.joinRole=m.joinRole||'co-author';p.order=m.order||[];
+  sortChapters(p);Cloud.lastMeta=JSON.stringify(metaOf(p));p.loaded.meta=true;
+  p.summary=m.summary||null;p.inviteCode=m.inviteCode||'';
+  if(Cloud.me&&p.members[Cloud.me]&&!p._seen&&Cloud.canWrite!==false){p._seen=1;Cloud.db.doc('projects/'+p.pid).update({members:{[Cloud.me]:{lastSeen:now()}}}).catch(()=>{})}
+  p._ck=null;softRender();renderProjSel();
+}
+function sortChapters(p){const o=p.order||[];p.chapters.sort((a,b)=>{const ia=o.indexOf(a.id),ib=o.indexOf(b.id);return (ia<0?1e9+(a.created||0):ia)-(ib<0?1e9+(b.created||0):ib)})}
+function applyChapters(s){const p=Cloud.p;if(!p)return;let changedCur=false;
+  s.docChanges().forEach(ch=>{const d=ch.doc,id=d.id;if(ch.type==='removed'){const i=p.chapters.findIndex(c=>c.id===id);if(i>=0&&!(d.metadata&&d.metadata.hasPendingWrites)){p.chapters.splice(i,1);delete Cloud.acked[id];if(UI.ch>=p.chapters.length)UI.ch=Math.max(0,p.chapters.length-1);changedCur=true}return}
+    if(d.metadata.hasPendingWrites)return;onChapterDoc(p,id,d.data())});
+  sortChapters(p);p._ck=null;
+  if(!p.loaded.chapters){p.loaded.chapters=true;replayOutbox(p)}
+  updateSync();softRender(changedCur);
+}
+function onChapterDoc(p,id,data){
+  let local=p.chapters.find(c=>c.id===id);
+  if(data.session===Cloud.session){Cloud.acked[id]={rev:data.rev,text:data.text,title:data.title,status:data.status||''};if(!local)p.chapters.push({id,title:data.title,text:data.text,rev:data.rev,status:data.status||'',created:data.created||data.at});return}
+  if(!local){p.chapters.push({id,title:data.title,text:data.text,rev:data.rev,status:data.status||'',created:data.created||data.at});Cloud.acked[id]={rev:data.rev,text:data.text,title:data.title,status:data.status||''};return}
+  const base=Cloud.acked[id];const dirty=base&&local.text!==base.text;
+  if(Cloud.blocked[id])return;
+  if(!dirty||data.text===local.text){local.text=data.text;local.title=data.title;local.status=data.status||'';Cloud.acked[id]={rev:data.rev,text:data.text,title:data.title,status:data.status||''};patchEditor(id,data.text,data.by);return}
+  const m=merge3(base.text,local.text,data.text);
+  if(m.clean){local.text=m.text;local.title=data.title;Cloud.acked[id]={rev:data.rev,text:data.text,title:data.title,status:data.status||''};patchEditor(id,m.text,data.by);toast(`Merged ${nm(data.by)}'s changes into your edits`);casWrite(p,local)}
+  else openConflict(p,local,data,base);
+}
+function applyItems(s){const p=Cloud.p;if(!p)return;
+  s.docChanges().forEach(ch=>{const d=ch.doc;if(d.metadata.hasPendingWrites)return;const it={...d.data(),id:d.id};const cat=it.cat;delete it.cat;
+    const arr=cat==='consequence'?p.consequences:cat==='idea'?p.ideas:p.mem[cat];if(!arr)return;const i=arr.findIndex(x=>x.id===d.id);
+    if(ch.type==='removed'){if(i>=0)arr.splice(i,1);delete Cloud.lastItems[d.id];return}
+    if(i>=0)arr[i]=it;else arr.push(it);Cloud.lastItems[d.id]=JSON.stringify({...it,cat})});
+  p._ck=null;p.loaded.items=true;softRender();
+}
+function applyCol(name,s){const p=Cloud.p;if(!p)return;p.cols[name]=s.docs.map(d=>({...d.data(),id:d.id}));if(name==='stats'){const mine=p.cols.stats.find(x=>x.id===Cloud.me);if(mine&&!ST.dirty)ST.obj=JSON.parse(JSON.stringify(mine))}
+  if(name==='activity'||name==='notifications'){renderPresence()}
+  softRender();renderNavBadges();}
+
+// ---------- generic feature collections (local + shared) ----------
+function colList(p,name){p.cols=p.cols||{};return p.cols[name]||(p.cols[name]=[])}
+async function dbw(fn){Cloud.inflight++;updateSync();try{const r=await fn();Cloud.err=null;return r}catch(e){if(e&&e.code==='unavailable'){await sleep(400+Math.random()*600);try{const r=await fn();Cloud.err=null;return r}catch(e2){e=e2}}Cloud.err=(e&&e.code)||'error';if(e&&e.code==='quota_exceeded')toast('The shared database is full. Delete old versions or activity to free space.');else if(e&&e.code==='invalid_argument'&&Cloud.canWrite!==true)toast('Your access to this project is read-only.');throw e}finally{Cloud.inflight--;updateSync()}}
+function colPath(p,name,id){return name==='notes'?`data/users/${Cloud.me}/${id}`:`projects/${p.pid}/${name}/${id}`}
+async function colAdd(p,name,obj){obj.id=obj.id||uid()+uid();colList(p,name).push(obj);softRender();if(p.cloud){const b={...obj};if(name==='notes')b.pid=p.pid;try{await dbw(()=>Cloud.db.doc(colPath(p,name,obj.id)).set(b))}catch(e){p.cols[name]=colList(p,name).filter(x=>x!==obj);softRender()}}else save();return obj}
+async function colSet(p,name,obj){const l=colList(p,name);const i=l.findIndex(x=>x.id===obj.id);if(i>=0)l[i]=obj;else l.push(obj);if(p.cloud){try{await dbw(()=>Cloud.db.doc(colPath(p,name,obj.id)).set({...obj,...(name==='notes'?{pid:p.pid}:{})}))}catch(e){}}else save()}
+async function colUpdate(p,name,id,patch){const o=colList(p,name).find(x=>x.id===id);if(o)Object.assign(o,patch);softRender();if(p.cloud){try{await dbw(()=>Cloud.db.doc(colPath(p,name,id)).update(patch))}catch(e){}}else save()}
+async function colDel(p,name,id){p.cols[name]=colList(p,name).filter(x=>x.id!==id);softRender();if(p.cloud){try{await dbw(()=>Cloud.db.doc(colPath(p,name,id)).delete())}catch(e){}}else save()}
+const actT={};
+function logAct(p,verb,target,throttleKey){if(p&&p.cloud){p.summary={...(p.summary||{}),by:myId(),verb,target:target||'',at:now()};scheduleFlush()}if(throttleKey){const k=throttleKey;if(actT[k]&&now()-actT[k]<600000)return;actT[k]=now()}const a={by:myId(),verb,target:target||'',at:now()};colAdd(p,'activity',a);if(!p.cloud){const l=colList(p,'activity');if(l.length>300)l.splice(0,l.length-300)}}
+function notify(p,to,text,extra){if(!p.cloud||!to||to===Cloud.me)return;colAdd(p,'notifications',{to,from:Cloud.me,text,at:now(),read:false,...(extra||{})})}
+
+// ---------- flushing local edits to the shared store ----------
+let flushT;
+function scheduleFlush(){clearTimeout(flushT);flushT=setTimeout(()=>flushCloud(Cloud.p),700)}
+function itemsOf(p){const out=[];for(const cat in p.mem)p.mem[cat].forEach(it=>{if(!it.id)it.id=uid();out.push({...it,cat})});p.consequences.forEach(it=>out.push({...it,cat:'consequence'}));(p.ideas||[]).forEach(it=>{if(!it.id)it.id=uid();out.push({...it,cat:'idea'})});return out}
+async function flushCloud(p){if(!p||!p.cloud||!Cloud.db||!p.loaded.chapters)return;
+  if(allowed(p,'memory')){const mj=JSON.stringify(metaOf(p));if(mj!==Cloud.lastMeta&&p.loaded.meta){Cloud.lastMeta=mj;try{await dbw(()=>Cloud.db.doc('projects/'+p.pid).update(JSON.parse(mj)))}catch(e){Cloud.lastMeta=''}}
+    if(p.loaded.items){const items=itemsOf(p);const seen=new Set();for(const it of items){seen.add(it.id);const j=JSON.stringify(it);if(Cloud.lastItems[it.id]!==j){Cloud.lastItems[it.id]=j;try{await dbw(()=>Cloud.db.doc(`projects/${p.pid}/items/${it.id}`).set(it))}catch(e){delete Cloud.lastItems[it.id]}}}
+      for(const id in Cloud.lastItems)if(!seen.has(id)){const old=Cloud.lastItems[id];delete Cloud.lastItems[id];try{await dbw(()=>Cloud.db.doc(`projects/${p.pid}/items/${id}`).delete())}catch(e){Cloud.lastItems[id]=old}}}}
+  if(allowed(p,'edit'))for(const c of p.chapters){const a=Cloud.acked[c.id];if(!a||a.text!==c.text||a.title!==c.title||(a.status||'')!==(c.status||''))casWrite(p,c)}
+}
+// compare-and-set chapter write: lease, re-read, write only if nobody moved the revision under us
+async function casWrite(p,c){
+  if(!p.cloud||!Cloud.db||Cloud.blocked[c.id])return;
+  if(Cloud.writing[c.id]){Cloud.again[c.id]=true;return}
+  Cloud.writing[c.id]=true;Cloud.inflight++;updateSync();
+  const ref=Cloud.db.doc(`projects/${p.pid}/chapters/${c.id}`);
+  try{
+    let lease={acquired:false};for(let i=0;i<12;i++){lease=await ref.acquire({holder:Cloud.session,ttlMs:2000});if(lease.acquired)break;await sleep(150+Math.random()*300)}
+    if(!lease.acquired)throw {code:'busy'};
+    const snap=await ref.get();const cur=snap.exists?snap.data():null;const base=Cloud.acked[c.id];
+    const text=c.text,title=c.title,status=c.status||'';
+    if(cur&&base&&cur.rev!==base.rev&&cur.session!==Cloud.session&&cur.text!==text){
+      if(cur.text===base.text){/* only title/status moved */}
+      else{const m=merge3(base.text,text,cur.text);if(!m.clean){openConflict(p,c,cur,base);return}c.text=m.text;patchEditor(c.id,m.text,cur.by);toast(`Merged ${nm(cur.by)}'s changes`)}}
+    else if(cur&&!base&&cur.text!==text){openConflict(p,c,cur,{rev:cur.rev,text:''});return}
+    const rev=(cur?cur.rev||0:0)+1;
+    const body={title:c.title,text:c.text,status:c.status||'',rev,by:Cloud.me,session:Cloud.session,at:now(),created:(cur&&cur.created)||now()};
+    await ref.set(body);
+    Cloud.acked[c.id]={rev,text:body.text,title:body.title,status:body.status};Cloud.err=null;
+    outboxDel(p,c.id);
+    logAct(p,'edited',c.title,'ed:'+c.id);
+  }catch(e){Cloud.err=(e&&e.code)||'error';setTimeout(()=>{if(Cloud.p===p)casWrite(p,c)},e&&e.code==='busy'?500:navigator.onLine?4000:8000)}
+  finally{Cloud.writing[c.id]=false;Cloud.inflight--;updateSync();if(Cloud.again[c.id]){Cloud.again[c.id]=false;const a=Cloud.acked[c.id];if(!a||a.text!==c.text||a.title!==c.title)casWrite(p,c)}}
+}
+async function createChapterCloud(p,c){if(!p.cloud)return;Cloud.acked[c.id]=null;await casWrite(p,c)}
+async function deleteChapterCloud(p,c){if(!p.cloud)return;await colAdd(p,'versions',{ch:c.id,title:c.title,text:c.text,label:'Before deletion',kind:'deleted',by:myId(),at:now()});try{await dbw(()=>Cloud.db.doc(`projects/${p.pid}/chapters/${c.id}`).delete())}catch(e){}delete Cloud.acked[c.id];logAct(p,'deleted',c.title)}
+
+// ---------- offline outbox: unsynced chapter text survives reloads ----------
+const OBX='marginalia.outbox';
+function outboxAll(){try{return JSON.parse(localStorage.getItem(OBX)||'{}')}catch(e){return {}}}
+function outboxPut(p,c){if(!p.cloud)return;const o=outboxAll();const a=Cloud.acked[c.id];o[p.pid+':'+c.id]={text:c.text,title:c.title,baseRev:a?a.rev:0,baseText:a?a.text:'',at:now()};try{localStorage.setItem(OBX,JSON.stringify(o))}catch(e){}}
+function outboxDel(p,id){const o=outboxAll();const k=p.pid+':'+id;if(o[k]&&p.chapters.find(c=>c.id===id)&&o[k].text!==p.chapters.find(c=>c.id===id).text)return;delete o[k];try{localStorage.setItem(OBX,JSON.stringify(o))}catch(e){}}
+function replayOutbox(p){const o=outboxAll();Object.entries(o).forEach(([k,v])=>{const [pid,id]=k.split(':');if(pid!==p.pid)return;const c=p.chapters.find(x=>x.id===id);if(!c){return}const a=Cloud.acked[id];
+  if(a&&a.text===v.text){delete o[k];return}
+  if(a&&a.rev===v.baseRev){c.text=v.text;c.title=v.title;casWrite(p,c);toast('Synced writing saved while you were offline');return}
+  const m=merge3(v.baseText||'',v.text,a?a.text:'');if(m.clean){c.text=m.text;casWrite(p,c);toast('Merged your offline writing')}else{c.text=v.text;openConflict(p,c,{text:a.text,rev:a.rev,by:null},{rev:v.baseRev,text:v.baseText})}});
+  try{localStorage.setItem(OBX,JSON.stringify(o))}catch(e){}}
+window.addEventListener('online',()=>{updateSync();if(Cloud.p)flushCloud(Cloud.p)});
+window.addEventListener('offline',updateSync);
+
+// ---------- conflicts ----------
+function openConflict(p,c,theirs,base){
+  if(Cloud.conflict&&Cloud.conflict.ch===c.id)return;Cloud.blocked[c.id]=true;const mine=c.text;
+  Cloud.conflict={pid:p.pid,ch:c.id,title:c.title,mine,theirs:theirs.text,theirRev:theirs.rev,theirBy:theirs.by,base:base?base.text:''};
+  colAdd(p,'versions',{ch:c.id,title:c.title,text:mine,label:`${nm(myId())}'s version (edit conflict)`,kind:'conflict',by:myId(),at:now()});
+  colAdd(p,'versions',{ch:c.id,title:c.title,text:theirs.text,label:`${nm(theirs.by)}'s version (edit conflict)`,kind:'conflict',by:theirs.by||myId(),at:now()});
+  showConflict();
+}
+function showConflict(){const k=Cloud.conflict;if(!k)return;const d=lineDiff(k.theirs,k.mine);
+  openModal(`<div class="row" style="justify-content:space-between"><h2 style="color:var(--warn)">⚠ Edit conflict · ${esc(k.title)}</h2></div>
+  <p class="small">You and ${who(k.theirBy)} changed the same passage at the same time. Neither version has been overwritten: both are saved in History until you choose.</p>
+  <div class="grid2"><div><h3>${who(myId())}'s version</h3><div class="diffbox">${diffHTML(d,'mine')}</div></div><div><h3>${who(k.theirBy)}'s version</h3><div class="diffbox">${diffHTML(d,'theirs')}</div></div></div>
+  <div class="row"><button class="btn primary" data-act="cfMine">Keep mine</button><button class="btn" data-act="cfTheirs">Keep theirs</button><button class="btn" data-act="cfMerge">Merge</button><button class="btn" data-act="cfManual">Manual resolution</button></div><div id="cfManualBox"></div>`)}
+function resolveConflict(text){const k=Cloud.conflict;const p=Cloud.p;if(!k||!p)return;const c=p.chapters.find(x=>x.id===k.ch);Cloud.conflict=null;Cloud.blocked[k.ch]=false;closeModal();if(!c)return;
+  Cloud.acked[k.ch]={rev:k.theirRev,text:k.theirs,title:c.title,status:c.status||''};c.text=text;patchEditor(c.id,text,null,true);
+  if(text!==k.theirs)casWrite(p,c);logAct(p,'resolved an edit conflict in',c.title);render()}
+
+// ---------- three-way merge (paragraph lines) ----------
+function lcsPairs(a,b){const n=a.length,m=b.length;if(n*m>4e6){const pairs=[];let i=0,j=0;while(i<n&&j<m&&a[i]===b[j]){pairs.push([i,j]);i++;j++}return pairs}
+  const L=Array.from({length:n+1},()=>new Uint16Array(m+1));for(let i=n-1;i>=0;i--)for(let j=m-1;j>=0;j--)L[i][j]=a[i]===b[j]?L[i+1][j+1]+1:Math.max(L[i+1][j],L[i][j+1]);
+  const pairs=[];let i=0,j=0;while(i<n&&j<m){if(a[i]===b[j]){pairs.push([i,j]);i++;j++}else if(L[i+1][j]>=L[i][j+1])i++;else j++}return pairs}
+function merge3(base,mine,theirs){
+  if(mine===theirs)return {clean:true,text:mine};if(base===mine)return {clean:true,text:theirs};if(base===theirs)return {clean:true,text:mine};
+  const B=base.split('\n'),M=mine.split('\n'),T=theirs.split('\n');
+  const pm=new Map(lcsPairs(B,M)),pt=new Map(lcsPairs(B,T));
+  const anchors=[];for(let i=0;i<B.length;i++)if(pm.has(i)&&pt.has(i))anchors.push([i,pm.get(i),pt.get(i)]);anchors.push([B.length,M.length,T.length]);
+  let bi=0,mi=0,ti=0,out=[],clean=true;
+  for(const [ab,am,at] of anchors){const bc=B.slice(bi,ab),mc=M.slice(mi,am),tc=T.slice(ti,at);const bj=bc.join('\n'),mj=mc.join('\n'),tj=tc.join('\n');
+    if(mj===tj)out.push(...mc);else if(mj===bj)out.push(...tc);else if(tj===bj)out.push(...mc);else{clean=false;out.push('<<<<<<< MINE',...mc,'=======',...tc,'>>>>>>> THEIRS')}
+    if(ab<B.length)out.push(B[ab]);bi=ab+1;mi=am+1;ti=at+1}
+  return {clean,text:out.join('\n')};
+}
+function lineDiff(a,b){const A=a.split('\n'),B=b.split('\n');const pairs=lcsPairs(A,B);const out=[];let i=0,j=0;for(const [pi,pj] of pairs.concat([[A.length,B.length]])){while(i<pi)out.push({t:'-',s:A[i++]});while(j<pj)out.push({t:'+',s:B[j++]});if(pi<A.length){out.push({t:'=',s:A[pi]});i++;j++}}return out}
+function diffHTML(d,side){return d.map(x=>{if(x.t==='=')return x.s.trim()?`<p>${esc(snip(x.s,400))}</p>`:'';if(side==='mine'&&x.t==='+')return `<p class="ins">${esc(x.s)}</p>`;if(side==='theirs'&&x.t==='-')return `<p class="ins">${esc(x.s)}</p>`;if(side==='both')return `<p class="${x.t==='+'?'ins':'del'}">${esc(x.s)}</p>`;return ''}).join('')||'<p class="muted">No text.</p>'}
+
+// ---------- editor patching for live remote changes ----------
+function patchEditor(id,text,by,force){const p=P();if(view!=='write')return;const c=p.chapters[UI.ch];if(!c||c.id!==id)return;const ta=$('#ms');if(!ta||ta.value===text)return;
+  const old=ta.value,s=ta.selectionStart,e=ta.selectionEnd;let pre=0;while(pre<old.length&&pre<text.length&&old[pre]===text[pre])pre++;let suf=0;while(suf<old.length-pre&&suf<text.length-pre&&old[old.length-1-suf]===text[text.length-1-suf])suf++;
+  const delta=text.length-old.length;const map=x=>x<=pre?x:(x>=old.length-suf?x+delta:pre+(text.length-suf-pre));
+  const st=window.scrollY;ta.value=text;if(document.activeElement===ta)ta.setSelectionRange(map(s),map(e));autoGrow(ta);window.scrollTo(0,st);
+  const w=$('#wcount');if(w)w.textContent=`${wc(text).toLocaleString()} words`;
+  if(by){const f=$('#liveFlash');if(f){f.innerHTML=`Updated by ${who(by)}`;f.hidden=false;clearTimeout(f._t);f._t=setTimeout(()=>f.hidden=true,2500)}}}
+
+// ---------- presence ----------
+let idleT,hbT;
+function pushPresence(){const r=Cloud.room;if(!r)return;const p=P();const c=view==='write'&&p&&p.chapters&&p.chapters[UI.ch];
+  r.presence({uid:Cloud.me||null,pid:p&&p.cloud?p.pid:null,view,ch:c?c.id:null,chNum:c?UI.ch+1:null,chTitle:c?String(c.title||'').slice(0,80):null,mode:c?(Cloud.editing&&allowed(p,'edit')?'editing':'viewing'):'browsing',typing:!!Cloud.typing,idle:!!Cloud.idle,hb:Math.floor(now()/45000)}).catch(()=>{})}
+function activity(){Cloud.lastInput=now();if(Cloud.idle){Cloud.idle=false;pushPresence()}clearTimeout(idleT);idleT=setTimeout(()=>{Cloud.idle=true;pushPresence()},180000)}
+['pointerdown','keydown','scroll','touchstart'].forEach(ev=>window.addEventListener(ev,activity,{passive:true}));
+hbT=setInterval(()=>{pushPresence();renderPresence()},45000);
+document.addEventListener('visibilitychange',()=>{if(document.hidden){Cloud.editing=false;Cloud.typing=false}pushPresence()});
+function peopleStatus(p){if(!p||!p.cloud)return [];const ids=new Set(Object.keys(p.members||{}));if(p.owner)ids.add(p.owner);const live=new Map();
+  Cloud.peers.forEach(pr=>{const id=pr.by||(pr.presence&&pr.presence.uid);if(!id)return;const pres=pr.presence||{};const stale=now()-pr.updatedAt>150000;const here=pres.pid===p.pid;
+    const st=stale?null:pres.typing&&here?'typing':pres.idle?'idle':here&&pres.mode==='editing'?'editing':here&&pres.mode==='viewing'?'viewing':'online';
+    if(!st)return;const rank={typing:5,editing:4,viewing:3,online:2,idle:1};const prev=live.get(id);if(!prev||rank[st]>rank[prev.st])live.set(id,{st,pres,here});ids.add(id)});
+  return [...ids].map(id=>{const l=live.get(id);const m=(p.members||{})[id]||{};return {id,role:id===p.owner?'owner':m.role||'viewer',st:l?l.st:'offline',pres:l&&l.pres,lastSeen:m.lastSeen}}).sort((a,b)=>(a.id===Cloud.me?-1:b.id===Cloud.me?1:0)||(a.st==='offline')-(b.st==='offline'))}
+const ST_L={typing:'Typing',editing:'Editing',viewing:'Viewing',online:'Online',idle:'Idle',offline:'Offline'};
+function presLine(x){const pr=x.pres||{};if((x.st==='editing'||x.st==='viewing'||x.st==='typing')&&pr.chNum)return `${x.st==='typing'?'Typing in':x.st==='editing'?'Currently editing':'Currently viewing'} Chapter ${pr.chNum}${pr.chTitle&&!/^chapter\s*\d+$/i.test(pr.chTitle)?' · '+esc(pr.chTitle):''}`;if(x.st==='offline')return x.lastSeen?'Last seen '+ago(x.lastSeen):'Offline';if(x.st==='idle')return 'Idle';return pr.view?`In ${esc((VIEWS.find(v=>v[0]===pr.view)||[,'the app'])[1])}`:'Online'}
+function renderPresence(){const el=$('#presenceBar');const p=P();if(!el)return;if(!p||!p.cloud){el.hidden=true;return}const L=peopleStatus(p);el.hidden=false;
+  el.innerHTML=L.map(x=>`<span class="who-chip" title="${esc(ROLE_D[x.role]||'')}"><i class="dot ${x.st}"></i><span><b>${who(x.id,true)}</b><small>${presLine(x)}</small></span></span>`).join('');
+  const cl=document.querySelectorAll('.chlist .ch');cl.forEach(b=>{const i=+b.dataset.i;const c=p.chapters[i];if(!c)return;const here=L.filter(x=>x.id!==Cloud.me&&x.pres&&x.pres.ch===c.id&&x.st!=='offline');let m=b.querySelector('.here');if(!m){m=document.createElement('span');m.className='here';b.querySelector('span').appendChild(m)}m.innerHTML=here.map(x=>`<i class="dot ${x.st}" title="${esc(nm(x.id))} · ${ST_L[x.st]}"></i>`).join('')});
+  renderNavBadges()}
+
+// ---------- sync status ----------
+function pendingCount(){const p=Cloud.p;if(!p||!p.cloud)return 0;return p.chapters.filter(c=>{const a=Cloud.acked[c.id];return !a||a.text!==c.text||a.title!==c.title}).length}
+function syncState(){const p=P();if(!p||!p.cloud)return 'local';if(!navigator.onLine)return 'offline';if(Cloud.err&&Cloud.err!=='busy')return 'lost';if(Cloud.inflight>0||pendingCount()>0)return 'syncing';return 'synced'}
+const SYNC_L={local:['Saved on this device','local'],synced:['☁ Synced','ok'],syncing:['↻ Syncing','busy'],lost:['⚠ Connection lost','bad'],offline:['📴 Offline · changes kept','bad']};
+function updateSync(){const s=syncState();const [t,c]=SYNC_L[s];document.querySelectorAll('.syncstat').forEach(el=>{el.textContent=t;el.dataset.s=c;el.title=s==='lost'?'Writes are failing. Your text is kept on this device and will retry.':s==='offline'?'You can keep writing. Changes sync when the connection returns.':''})}
+
+// ---------- shared workspace actions ----------
+async function shareProject(lp){if(!Cloud.db||!Cloud.me){toast('The shared workspace isn\'t available in this view');return}
+  const pid=uid()+uid()+uid();const t=now();toast('Creating the collab project…');
+  try{await dbw(()=>Cloud.db.doc('projects/'+pid).set({name:lp.name,owner:Cloud.me,members:{[Cloud.me]:{role:'owner',joined:t,lastSeen:t,name:myName()}},settings:sharedSettings(lp.settings),order:lp.chapters.map(c=>c.id),sceneNotes:lp.sceneNotes||{},joinRole:'co-author',createdAt:t}));
+    for(const c of lp.chapters)await dbw(()=>Cloud.db.doc(`projects/${pid}/chapters/${c.id}`).set({title:c.title,text:c.text,status:c.status||'',rev:1,by:Cloud.me,session:Cloud.session,at:t,created:t}));
+    for(const it of itemsOf(lp))await dbw(()=>Cloud.db.doc(`projects/${pid}/items/${it.id}`).set(it));
+    for(const n of ['comments','suggestions','board','sharednotes','experiments','expchapters','versions','activity'])for(const o of (lp.cols&&lp.cols[n])||[])await dbw(()=>Cloud.db.doc(`projects/${pid}/${n}/${o.id}`).set({...o,by:o.by==='me'?Cloud.me:o.by}));
+    lp.sharedAs=pid;save();addCollab(pid,lp.name);openCloud(pid);setTimeout(()=>logAct(Cloud.p,'created the shared project',lp.name),800);toast('Collab project created. Share its join link from Settings.')}
+  catch(e){toast('Could not finish moving the project: '+((e&&e.code)||'error')+'. Nothing was deleted locally.')}}
+async function createSharedProject(name){if(!Cloud.db||!Cloud.me){toast('The shared workspace isn\'t available in this view');return}const lp=newProject(name);lp.chapters.push({id:uid(),title:'Chapter 1',text:'',rev:0});await shareProject(lp);lp.sharedAs&&(S.projects=S.projects.filter(x=>x!==lp))}
+
+// ---------- author statistics ----------
+const ST={obj:null,last:0,dirty:false,base:{},mode:'w',flushT:null,autoV:{}};
+const dayKey=t=>{const d=new Date(t);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+function myStats(p){const id=myId();let o=colList(p,'stats').find(x=>x.id===id);if(!o){o={id,days:{},sessions:[]};colList(p,'stats').push(o)}if(!ST.obj||ST.obj.id!==id||ST.pid!==p.id){ST.obj=o;ST.pid=p.id}return ST.obj}
+function statTick(p){const s=myStats(p);const t=now();const d=s.days[dayKey(t)]||(s.days[dayKey(t)]={a:0,d:0,wm:0,em:0});const gap=t-ST.last;
+  if(ST.last&&gap<60000)d[ST.mode==='w'?'wm':'em']+=gap;
+  const last=s.sessions[s.sessions.length-1];if(!last||t-last.e>600000){s.sessions.push({s:t,e:t,a:0,d:0});if(s.sessions.length>300)s.sessions.shift()}else last.e=t;
+  ST.last=t;ST.dirty=true;statFlushSoon(p)}
+function bagDiff(a,b){const f=new Map();words(a).forEach(w=>f.set(w,(f.get(w)||0)+1));let add=0;words(b).forEach(w=>{const v=f.get(w)||0;if(v>0)f.set(w,v-1);else add++});let del=0;f.forEach(v=>del+=v);return {add,del}}
+function statWords(p,c){const old=ST.base[c.id];ST.base[c.id]=c.text;if(old===undefined)return;const {add,del}=bagDiff(old,c.text);if(!add&&!del)return;const s=myStats(p);const d=s.days[dayKey(now())]||(s.days[dayKey(now())]={a:0,d:0,wm:0,em:0});d.a+=add;d.d+=del;const last=s.sessions[s.sessions.length-1];if(last){last.a+=add;last.d+=del}ST.mode=add>=del?'w':'e';ST.dirty=true;statFlushSoon(p);
+  if(!ST.autoV[c.id])ST.autoV[c.id]=now();else if(now()-ST.autoV[c.id]>1800000){ST.autoV[c.id]=now();autoVersion(p,c)}}
+function statFlushSoon(p){if(ST.flushT)return;ST.flushT=setTimeout(()=>{ST.flushT=null;if(!ST.dirty)return;ST.dirty=false;const o=JSON.parse(JSON.stringify(myStats(p)));colSet(p,'stats',o)},p.cloud?20000:3000)}
+function autoVersion(p,c){colAdd(p,'versions',{ch:c.id,title:c.title,text:c.text,label:'Auto snapshot',kind:'auto',by:myId(),at:now()});if(!p.cloud){const v=colList(p,'versions').filter(x=>x.ch===c.id&&x.kind==='auto').sort((a,b)=>a.at-b.at);while(v.length>5){const o=v.shift();p.cols.versions=p.cols.versions.filter(x=>x!==o)}}}
+
+// ================= Marginalia: writing, projects, progress =================
+const KEY='marginalia.v1';
+let S=null,view='home';
+const UI={ch:0,panel:null,detail:false,search:'',manage:false};
+const VIEWS=[['home','Home'],['write','Write'],['progress','Progress'],['settings','Settings']];
+function loadState(){try{const r=localStorage.getItem(KEY);if(r){const s=JSON.parse(r);if(s&&s.projects)return s}}catch(e){}return null}
+let saveT;function save(){if(S&&S.active&&S.active.startsWith('cloud:')&&Cloud.p)scheduleFlush();clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S,(k,v)=>k.startsWith('_')?undefined:v));UI.localOK=true}catch(e){UI.localOK=false;if(!(P()&&P().cloud))toast('This browser refused to save. Export a backup from Settings.')}updateSync()},300)}
+const LOADING=(()=>{const p=newProject('Loading…');p.id='loading';p.cloud=true;p.loading=true;p.loaded={};p.cols={};return p})();
+function P(){if(!S||!S.active)return null;if(S.active.startsWith('cloud:')){if(Cloud.p&&Cloud.p.id===S.active)return Cloud.p;return LOADING}return S.projects.find(p=>p.id===S.active)||null}
+function pref(id){S.prefs=S.prefs||{};return S.prefs[id]||(S.prefs[id]={})}
+function setPersonal(p,k,v){p.settings[k]=v;pref(p.id)[k]=v;save()}
+function lastCh(id){return pref(id).lastCh||0}
+function touch(p){p._ck=null;save()}
+function setStatus(){}
+function toast(t){const r=$('#toastRoot');r.innerHTML=`<div class="toast" role="status">${esc(t)}</div>`;clearTimeout(toast.t);toast.t=setTimeout(()=>r.innerHTML='',2600)}
+function openModal(html,cls){$('#modalRoot').innerHTML=`<div class="modal ${cls||''}" data-act="closeModal"><div class="box" role="dialog" aria-modal="true">${html}</div></div>`;if(!isPhone()){const f=$('#modalRoot input:not([readonly]),#modalRoot textarea:not([readonly])');if(f)setTimeout(()=>f.focus(),20)}}
+function closeModal(){$('#modalRoot').innerHTML='';if(softPending){softPending=false;setTimeout(()=>softRender(),30)}}
+function copyText(t){try{navigator.clipboard.writeText(t).then(()=>toast('Copied'),()=>showText('Copy this text',t))}catch(e){showText('Copy this text',t)}}
+function showText(title,t){openModal(`<div class="mhead"><h2>${esc(title)}</h2><button class="btn ghost" data-act="closeModal">Close</button></div><p class="small muted">Select all and copy it into a file. This page can't start downloads.</p><textarea class="out" id="outText" readonly>${esc(t)}</textarea><div class="row"><button class="btn primary" data-act="copyOut">Copy</button></div>`)}
+const isPhone=()=>window.matchMedia('(max-width: 760px)').matches;
+function autoGrow(ta){if(!ta)return;ta.style.height='auto';ta.style.height=Math.max(ta.scrollHeight,window.innerHeight*.6)+'px'}
+const num=n=>Number(n||0).toLocaleString();
+const pad=i=>String(i+1).padStart(2,'0');
+function totalWords(p){return p.chapters.reduce((a,c)=>a+wc(c.text),0)}
+function canEditText(p){return allowed(p,'edit')&&!Cloud.blocked[(p.chapters[UI.ch]||{}).id]}
+function applyTheme(){const t=S&&S.theme;if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;else delete document.documentElement.dataset.theme}
+
+// ---------- render ----------
+let softPending=false,lastKey='';
+function softRender(force){if(UI._rt)return;UI._rt=requestAnimationFrame(()=>{UI._rt=null;const a=document.activeElement;const typing=a&&$('#view').contains(a)&&/INPUT|TEXTAREA|SELECT/.test(a.tagName);if(!force&&(typing||$('#modalRoot').innerHTML)){softPending=true;refreshBits();return}render()})}
+document.addEventListener('focusout',()=>setTimeout(()=>{const a=document.activeElement;if(softPending&&!(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))&&!$('#modalRoot').innerHTML){softPending=false;render()}},60));
+function refreshBits(){renderPresence();updateSync();const p=P();if(view==='write'&&p&&!p.loading){const n=$('#cmCount');if(n)n.textContent=openComments(p).length||'';const d=$('#drawer');if(d&&UI.panel==='comments')d.querySelector('.dbody').innerHTML=commentsBody(p)}}
+function renderNavBadges(){}
+function renderProjSel(){if(view==='home')softRender()}
+function render(){
+  const p=P();if(view!=='home'&&!p)view='home';
+  document.body.classList.toggle('phonewrite',isPhone()&&view==='write'&&!!p&&!p.loading);
+  const inProj=view!=='home'&&p;
+  $('#top').innerHTML=`<button class="brand" data-act="home" aria-label="Home">Margin<i>alia</i></button>
+   ${inProj?`<span class="crumb">${p.cloud?'Collab':'Solo'} · <b>${esc(p.name)}</b></span><nav class="tabs-top">${[['write','Write'],['progress','Progress'],['settings','Settings']].map(([k,l])=>`<button data-act="go" data-v="${k}" aria-current="${view===k}">${l}</button>`).join('')}</nav>`:'<span class="grow"></span>'}
+   <span class="grow"></span>${inProj&&p.cloud?'<span id="presMini" class="presmini"></span>':''}<span class="syncstat"></span>`;
+  const key=view+':'+(p?p.id:'');const y=window.scrollY;const v=$('#view');
+  try{v.innerHTML=view==='home'?vHome():p.loading?`<div class="empty">${Cloud.dbState==='absent'?'Collab projects need you to be signed in to Claude, viewing this page on claude.ai.':'Opening the project…'}</div>`:({write:vWrite,progress:vProgress,settings:vSettings}[view]||vWrite)(p)}catch(e){console.error(e);v.innerHTML=`<div class="empty">Something went wrong showing this screen: ${esc(e.message)}</div>`}
+  if(key===lastKey)window.scrollTo(0,y);lastKey=key;
+  if(view==='write'){const ta=$('#ms');if(ta){autoGrow(ta);['select','keyup','mouseup','touchend'].forEach(ev=>ta.addEventListener(ev,trackSel))}if(p&&!p.loading)pref(p.id).lastCh=UI.ch}
+  updateSync();renderPresence();resolveNames();pushPresence();
+}
+function trackSel(){const ta=$('#ms');if(!ta)return;UI.caret=ta.selectionStart;UI.lastSel=ta.selectionEnd-ta.selectionStart>0?[ta.selectionStart,ta.selectionEnd]:null;const b=$('#cmAdd');if(b)b.hidden=!UI.lastSel}
+
+// ---------- presence ----------
+const DOT={typing:'✏️',editing:'✏️',viewing:'👀',online:'🟢',idle:'🟡',offline:'⚪'};
+function renderPresence(){const p=P();const m=$('#presMini');if(!p||!p.cloud||p.loading){if(m)m.innerHTML='';return}const L=peopleStatus(p);const on=L.filter(x=>x.st!=='offline');
+  if(m)m.innerHTML=L.filter(x=>x.id!==Cloud.me).slice(0,4).map(x=>`<span class="pchip" title="${esc(nm(x.id))}: ${esc(presLine(x).replace(/<[^>]+>/g,''))}"><i class="dot ${x.st}"></i>${who(x.id)}<small>${x.st==='offline'?'offline':x.pres&&x.pres.chNum?`${x.st==='typing'?'typing':x.st==='editing'?'editing':'viewing'} ch ${x.pres.chNum}`:ST_L[x.st].toLowerCase()}</small></span>`).join('')+(on.length>1?`<span class="small muted">${on.length} online</span>`:'');
+  const pl=$('#peopleList');if(pl)pl.innerHTML=peopleHTML(p);
+  document.querySelectorAll('.chl [data-ch-id]').forEach(b=>{const here=L.filter(x=>x.id!==Cloud.me&&x.pres&&x.pres.ch===b.dataset.chId&&x.st!=='offline');const s=b.querySelector('.here');if(s)s.innerHTML=here.map(x=>`<i class="dot ${x.st}" title="${esc(nm(x.id))}"></i>`).join('')});
+  if(view==='home'){const h=document.querySelectorAll('[data-live-pid]');h.forEach(el=>el.innerHTML=liveLine(el.dataset.livePid))}}
+function peopleHTML(p){return peopleStatus(p).map(x=>`<div class="person"><i class="dot ${x.st}"></i><div><b>${who(x.id,true)}</b> <span class="small muted">${x.role==='owner'?'owner':''}</span><div class="small muted">${DOT[x.st]} ${presLine(x)}</div></div></div>`).join('')}
+function liveLine(pid){const live=Cloud.peers.filter(pr=>pr.presence&&pr.presence.pid===pid&&!pr.isMe&&now()-pr.updatedAt<150000&&pr.presence.chNum);if(!live.length)return '';const x=live[0];const st=x.presence.idle?'is idle in':x.presence.mode==='editing'||x.presence.typing?'is currently editing':'is currently viewing';return `<i class="dot ${x.presence.mode==='editing'?'editing':'viewing'}"></i> ${who(x.by||x.presence.uid)} ${st} Chapter ${x.presence.chNum}.`}
+
+// ---------- HOME ----------
+function myCollabs(){return Cloud.list.filter(x=>x.owner===Cloud.me||(x.members&&x.members[Cloud.me]))}
+function vHome(){
+  const solo=S.projects.filter(p=>!p.sharedAs||true);const col=myCollabs();const inv=(Cloud.invites||[]).filter(i=>i.status==='pending'&&!myCollabs().some(c=>c.pid===i.pid));
+  const soloCard=p=>{const pr=pref(p.id);const i=clamp(pr.lastCh||0,0,Math.max(0,p.chapters.length-1));const c=p.chapters[i];const w=totalWords(p);const t=+(p.settings&&p.settings.target)||80000;
+    return `<div class="pcard"><div class="pc-top"><h3>📖 ${esc(p.name)}</h3><span class="small muted">${p.updated?'Edited '+ago(p.updated):''}</span></div>
+     <div class="pc-meta">${c?`<span>Chapter ${i+1}${c.title&&!/^chapter\s*\d+$/i.test(c.title)?' · '+esc(c.title):''}</span>`:'<span>No chapters yet</span>'}<span>${num(w)} words</span><span>${Math.min(100,Math.round(w/t*100))}% complete</span></div>
+     <div class="bar"><i style="width:${Math.min(100,w/t*100)}%"></i></div>
+     <div class="row"><button class="btn primary" data-act="openProj" data-id="${p.id}">Continue writing</button></div></div>`};
+  const colCard=x=>{const s=x.summary||{};const mem=Object.keys(x.members||{});if(x.owner&&!mem.includes(x.owner))mem.unshift(x.owner);const t=+(x.settings&&x.settings.target)||80000;
+    return `<div class="pcard"><div class="pc-top"><h3>👥 ${esc(x.name)}</h3><span class="small muted">${s.at?ago(s.at):''}</span></div>
+     <div class="authors">${mem.map(id=>`<span class="achip">${who(id,true)}</span>`).join('')}</div>
+     <div class="small live" data-live-pid="${esc(x.pid)}">${liveLine(x.pid)}</div>
+     <div class="pc-meta">${s.chNum?`<span>Chapter ${s.chNum}${s.chTitle&&!/^chapter\s*\d+$/i.test(s.chTitle)?' · '+esc(s.chTitle):''}</span>`:''}${s.words!=null?`<span>${num(s.words)} words</span><span>${Math.min(100,Math.round(s.words/t*100))}% complete</span>`:''}</div>
+     ${s.words!=null?`<div class="bar"><i style="width:${Math.min(100,s.words/t*100)}%"></i></div>`:''}
+     ${s.by&&s.verb?`<div class="small muted">${who(s.by)} ${esc(s.verb)} ${esc(s.target||'')}</div>`:''}
+     <div class="row"><button class="btn primary" data-act="openProj" data-id="cloud:${esc(x.pid)}">Open project</button></div></div>`};
+  const cloudNote=Cloud.dbState==='absent'||!Cloud.me?`<p class="small muted">${Cloud.dbState==='waiting'?'Connecting…':(FIREBASE_CONFIG?'Couldn\'t reach Firebase. Check your connection and the config in this file.':'Collab projects need a free Firebase database. Follow the setup notes that came with this file, then paste the config at the top of it.')}</p>`:'';
+  return `<div class="home"><div class="hhead"><h1>My projects</h1><button class="btn primary big" data-act="newProject">＋ New project</button></div>
+   ${inv.length?`<section><h2>Invitations</h2><div class="cards">${inv.map(i=>`<div class="pcard"><h3>👥 ${esc(i.pname||'A project')}</h3><p class="small">${who(i.from)} invited you to write together.</p><div class="row"><button class="btn primary" data-act="invAccept" data-id="${i.id}">Accept</button><button class="btn" data-act="invDecline" data-id="${i.id}">Decline</button></div></div>`).join('')}</div></section>`:''}
+   <section><h2>📖 Solo projects</h2>${solo.length?`<div class="cards">${solo.map(soloCard).join('')}</div>`:'<div class="empty">No solo projects yet. Start one with ＋ New project.</div>'}</section>
+   <section><div class="row" style="justify-content:space-between"><h2>👥 Collab projects</h2>${Cloud.db&&Cloud.me?'<button class="btn ghost sm" data-act="joinLinkAsk">Join with a link</button>':''}</div>${cloudNote}${col.length?`<div class="cards">${col.map(colCard).join('')}</div>`:(Cloud.db&&Cloud.me?'<div class="empty">No collab projects yet. Create one, or open a join link a co-author sent you.</div>':'')}</section></div>`}
+
+// ---------- WRITE ----------
+function chapterList(p){return `<div class="chl"><div class="chl-h"><h3>Chapters</h3>${allowed(p,'edit')?`<span class="row"><button class="btn sm ghost" data-act="manage" aria-pressed="${UI.manage}" title="Reorder, rename or delete">Edit</button><button class="btn sm" data-act="addCh" aria-label="Add chapter">＋</button></span>`:''}</div>
+  <ol>${p.chapters.map((c,i)=>`<li draggable="${allowed(p,'edit')}" data-i="${i}"><button class="chi" data-act="selCh" data-i="${i}" data-ch-id="${c.id}" aria-current="${i===UI.ch}"><span class="n mono">${pad(i)}</span><span class="t">${esc(c.title||'Untitled')}${c.status==='complete'?' <span class="ok">✓</span>':''}<span class="here"></span></span><span class="w mono">${num(wc(c.text))}</span></button>${UI.manage?`<span class="mg"><button class="btn sm ghost" data-act="moveCh" data-i="${i}" data-d="-1" aria-label="Move up">↑</button><button class="btn sm ghost" data-act="moveCh" data-i="${i}" data-d="1" aria-label="Move down">↓</button><button class="btn sm ghost danger" data-act="delCh" data-i="${i}" aria-label="Delete">✕</button></span>`:''}</li>`).join('')}</ol>
+  ${p.chapters.length?`<div class="small muted chl-f">${num(totalWords(p))} words in total</div>`:''}</div>`}
+function vWrite(p){
+  if(!p.chapters.length){if(p.cloud&&!p.loaded.chapters)return '<div class="empty">Opening the manuscript…</div>';if(!allowed(p,'edit'))return '<div class="empty">This project has no chapters yet.</div>';p.chapters.push({id:uid(),title:'Chapter 1',text:'',rev:0,created:now()});touch(p)}
+  UI.ch=clamp(UI.ch,0,p.chapters.length-1);const c=p.chapters[UI.ch];const canE=canEditText(p);ST.base[c.id]===undefined&&(ST.base[c.id]=c.text);
+  const conflict=Cloud.blocked[c.id]?`<div class="note warnbg"><span>Edit conflict in this chapter. Your writing is paused here until you choose a version.</span><button class="btn sm" data-act="cfShow">Resolve</button></div>`:'';
+  const cmN=p.cloud?openComments(p).length:0;const fs=p.settings.fontSize||(isPhone()?19:18);
+  if(isPhone())return `<div class="m-ed"><header class="m-top"><button class="btn sm ghost" data-act="home" aria-label="Home">←</button><button class="m-title" data-act="sheet" data-k="chapters"><span class="small muted">Chapter ${UI.ch+1} of ${p.chapters.length} ▾</span><b>${esc(c.title||'Untitled')}</b></button><span class="syncstat"></span></header>
+    ${p.cloud?'<div id="presMini" class="presmini m"></div>':''}${conflict}
+    <div class="m-meta small muted"><span id="wcount">${num(wc(c.text))} words</span><span>· ${num(totalWords(p))} in book</span><span id="liveFlash" hidden></span></div>
+    <textarea id="ms" class="m-text" spellcheck="true" autocapitalize="sentences" aria-label="Chapter text" style="font-size:${fs}px" ${canE?'':'readonly'} placeholder="Start writing…">${esc(c.text)}</textarea>
+    <nav class="m-bar"><button data-act="sheet" data-k="chapters">Chapters</button><button data-act="search">Search</button>${p.cloud?`<button data-act="cmNew" id="cmAdd" hidden>＋ Comment</button><button data-act="sheet" data-k="comments">Comments <span id="cmCount">${cmN||''}</span></button>`:''}<button data-act="sheet" data-k="more">More</button></nav></div>`;
+  return `<div class="write ${UI.panel?'with-panel':''}">${chapterList(p)}
+   <div class="wmain"><div class="wbar"><span id="wcount" class="mono small">${num(wc(c.text))} words</span><span id="liveFlash" class="small" hidden></span><span class="grow"></span>
+     <button class="btn sm ghost" data-act="search">🔍 Search</button>${p.cloud?`<button class="btn sm" data-act="cmNew" id="cmAdd" hidden>＋ Comment</button><button class="btn sm ghost" data-act="panel" data-k="comments" aria-pressed="${UI.panel==='comments'}">💬 Comments <span id="cmCount">${cmN||''}</span></button>`:''}
+     <button class="btn sm ghost" data-act="panel" data-k="history" aria-pressed="${UI.panel==='history'}">History</button>${allowed(p,'edit')?`<button class="btn sm ghost" data-act="complete" aria-pressed="${c.status==='complete'}">${c.status==='complete'?'✓ Complete':'Mark complete'}</button>`:''}</div>
+    ${conflict}${!allowed(p,'edit')?'<div class="note">You can read and comment on this project.</div>':''}
+    <div class="page"><input class="ctitle" id="chTitle" value="${esc(c.title)}" aria-label="Chapter title" ${canE?'':'readonly'}><textarea id="ms" spellcheck="true" aria-label="Chapter text" style="font-size:${fs}px" ${canE?'':'readonly'} placeholder="Start writing…">${esc(c.text)}</textarea></div></div>
+   ${UI.panel?`<aside class="drawer" id="drawer"><div class="dhead"><h2>${UI.panel==='comments'?'Comments':'History'}</h2><button class="btn ghost sm" data-act="panel" data-k="${UI.panel}">Close</button></div><div class="dbody">${UI.panel==='comments'?commentsBody(p):historyBody(p,c)}</div></aside>`:''}</div>`}
+function sheet(k){const p=P(),c=p.chapters[UI.ch];let h='';
+  if(k==='chapters')h=`<h2>Chapters</h2>${chapterList(p)}`;
+  else if(k==='comments')h=`<h2>Comments</h2>${commentsBody(p)}`;
+  else if(k==='history')h=`<h2>History</h2>${historyBody(p,c)}`;
+  else h=`<h2>${esc(c.title||'Chapter')}</h2><div class="stack">${allowed(p,'edit')?`<button class="mrow" data-act="renameCh">Rename chapter</button><button class="mrow" data-act="complete">${c.status==='complete'?'Mark not complete':'Mark chapter complete'}</button>`:''}<button class="mrow" data-act="sheet" data-k="history">History</button><button class="mrow" data-act="font" data-d="1">Larger text</button><button class="mrow" data-act="font" data-d="-1">Smaller text</button><button class="mrow" data-act="go" data-v="progress">Progress</button><button class="mrow" data-act="go" data-v="settings">Settings</button>${allowed(p,'edit')?`<button class="mrow danger" data-act="delCh" data-i="${UI.ch}">Delete chapter</button>`:''}</div>`;
+  openModal(`<div class="mhead"><span></span><button class="btn ghost" data-act="closeModal">Done</button></div>${h}`,'msheet');resolveNames()}
+
+// ---------- comments ----------
+function openComments(p){return colList(p,'comments').filter(x=>!x.resolved&&p.chapters.some(c=>c.id===x.ch))}
+function anchorOf(text,a){if(!a||!a.quote)return -1;let best=-1,bs=-Infinity;let i=text.indexOf(a.quote);while(i>=0){let sc=0;if(a.prefix&&text.slice(Math.max(0,i-a.prefix.length),i)===a.prefix)sc+=1000;sc-=Math.abs(i-(a.start||0))/1e6;if(sc>bs){bs=sc;best=i}i=text.indexOf(a.quote,i+1)}return best}
+function mentionText(s){return esc(s||'').replace(/@\[([^\]]+)\]\(([^)]+)\)/g,(m,n,id)=>`<b class="mention">@<span data-uid="${esc(id)}">${esc(nm(id)||n)}</span></b>`)}
+function mentionIds(s){return [...String(s).matchAll(/@\[[^\]]+\]\(([^)]+)\)/g)].map(m=>m[1])}
+function composer(id,label){return `<label class="f" for="${id}">${label}<textarea id="${id}" class="composer" rows="3"></textarea></label><div class="mentions" id="${id}_m"></div>${Cloud.user?'<p class="small muted">Type @ to mention a collaborator.</p>':''}`}
+function commentsBody(p){const c=p.chapters[UI.ch];const list=colList(p,'comments').filter(x=>x.ch===c.id).sort((a,b)=>(anchorOf(c.text,a)-anchorOf(c.text,b))||(a.at-b.at));const open=list.filter(x=>!x.resolved),done=list.filter(x=>x.resolved);
+  const one=x=>{const at=anchorOf(c.text,x);const mine=x.by===myId()||myRole(p)==='owner';return `<div class="cm ${x.resolved?'resolved':''}"><button class="linkish small" data-act="cmGo" data-id="${x.id}">${at<0?'(text since changed) ':''}<q>${esc(snip(x.quote,90))}</q></button>
+    <div class="small"><b>${who(x.by)}</b> <span class="muted">${ago(x.at)}</span></div><div class="cmbody">${mentionText(x.body)}</div>
+    ${(x.replies||[]).map(r=>`<div class="reply small"><b>${who(r.by)}</b> <span class="muted">${ago(r.at)}</span><div>${mentionText(r.body)}</div></div>`).join('')}
+    ${allowed(p,'comment')?`<div class="row"><button class="btn sm" data-act="cmReply" data-id="${x.id}">Reply</button><button class="btn sm" data-act="cmResolve" data-id="${x.id}">${x.resolved?'Reopen':'Resolve'}</button>${mine?`<button class="btn sm ghost danger" data-act="cmDel" data-id="${x.id}">Delete</button>`:''}</div>`:''}<div id="cmx_${x.id}"></div></div>`};
+  return `<p class="small muted">Select text in the chapter, then press ＋ Comment.</p><div class="stack">${open.map(one).join('')||'<p class="small muted">No open comments on this chapter.</p>'}${done.length?`<details><summary class="small muted">${done.length} resolved</summary>${done.map(one).join('')}</details>`:''}</div>`}
+
+// ---------- history ----------
+async function loadVersions(p,chId){if(!p.cloud)return;try{const s=await Cloud.db.collection(`projects/${p.pid}/versions`).where('ch','==',chId).get();p.cols.versions=colList(p,'versions').filter(v=>v.ch!==chId).concat(s.docs.map(d=>({...d.data(),id:d.id})));p._vl=p._vl||{};p._vl[chId]=true;const d=$('#drawer .dbody');if(d&&UI.panel==='history')d.innerHTML=historyBody(p,p.chapters[UI.ch])}catch(e){}}
+function historyBody(p,c){if(p.cloud&&!(p._vl&&p._vl[c.id])){loadVersions(p,c.id);return '<p class="small muted">Loading versions…</p>'}
+  const vs=colList(p,'versions').filter(v=>v.ch===c.id).sort((a,b)=>b.at-a.at);const cmp=UI.cmp&&vs.find(v=>v.id===UI.cmp);
+  return `<p class="small muted">Saved automatically every 30 minutes of writing, before any restore, and on both sides of an edit conflict.</p><div class="row"><button class="btn sm" data-act="verSave">Save a version now</button></div>
+   ${cmp?`<div class="cmpbox"><div class="row" style="justify-content:space-between"><b class="small">${esc(cmp.label)} → now</b><button class="btn sm ghost" data-act="vCmp" data-id="">Close</button></div><div class="diffbox">${diffHTML(lineDiff(cmp.text,c.text),'both')}</div></div>`:''}
+   <div class="stack">${vs.map(v=>`<div class="ver"><div><b class="small">${esc(v.label||'Version')}</b><div class="small muted">${new Date(v.at).toLocaleString([], {dateStyle:'medium',timeStyle:'short'})} · ${who(v.by)} · ${num(wc(v.text))} words</div></div><div class="row"><button class="btn sm" data-act="vCmp" data-id="${v.id}">Compare</button>${allowed(p,'edit')?`<button class="btn sm" data-act="vRestore" data-id="${v.id}">Restore</button>`:''}</div><div id="vx_${v.id}"></div></div>`).join('')||'<p class="small muted">No versions of this chapter yet.</p>'}</div>`}
+
+// ---------- PROGRESS ----------
+function statsOf(list){const days={};let sessions=[];list.forEach(s=>{for(const d in (s.days||{})){const o=days[d]||(days[d]={a:0,d:0,wm:0,em:0});for(const k in s.days[d])o[k]+=s.days[d][k]}sessions=sessions.concat(s.sessions||[])});
+  const keys=Object.keys(days).sort();const sum=k=>keys.reduce((a,d)=>a+days[d][k],0);const t0=new Date();t0.setHours(0,0,0,0);
+  const since=n=>keys.filter(d=>new Date(d+'T00:00').getTime()>=t0.getTime()-(n-1)*864e5).reduce((a,d)=>a+days[d].a,0);
+  const wk=new Date(t0);wk.setDate(wk.getDate()-((wk.getDay()+6)%7));const mo=new Date(t0.getFullYear(),t0.getMonth(),1);
+  const inRange=from=>keys.filter(d=>new Date(d+'T00:00')>=from).reduce((a,d)=>a+days[d].a,0);
+  const active=keys.filter(d=>days[d].a>0);let longest=0,run=0,prev=null;active.forEach(d=>{const dt=new Date(d+'T00:00').getTime();run=prev&&dt-prev<=864e5*1.5?run+1:1;longest=Math.max(longest,run);prev=dt});
+  let cur=0;let day=new Date(t0);if(!(days[dayKey(day.getTime())]||{}).a)day=new Date(day.getTime()-864e5);while((days[dayKey(day.getTime())]||{}).a>0){cur++;day=new Date(day.getTime()-864e5)}
+  const ses=sessions.filter(s=>s.a>0);return {today:since(1),week:inRange(wk),month:inRange(mo),written:sum('a'),time:sum('wm')+sum('em'),cur,longest,days:active.length,sessions:ses.length,avg:ses.length?Math.round(ses.reduce((a,s)=>a+s.a,0)/ses.length):0}}
+const hrs=ms=>ms>=3600000?(ms/3600000).toFixed(1)+' h':Math.round(ms/60000)+' min';
+function vProgress(p){const mine=statsOf(colList(p,'stats').filter(x=>x.id===myId()));const W=totalWords(p);const t=+p.settings.target||80000;const done=p.chapters.filter(c=>c.status==='complete').length;const g=p.settings.goal||pref('global').goal;
+  let goal='';if(g&&g.n){const val=g.per==='week'?mine.week:mine.today;goal=`<section class="sheet"><div class="row" style="justify-content:space-between"><h2>${g.per==='week'?'This week':'Today'}</h2><span class="mono">${num(val)} / ${num(g.n)} words</span></div><div class="bar big"><i style="width:${Math.min(100,val/g.n*100)}%"></i></div><p class="small muted">${val>=g.n?'Goal reached.':`${num(g.n-val)} to go. Any words count.`}</p></section>`}
+  const authors=p.cloud?colList(p,'stats').map(s=>({id:s.id,w:statsOf([s]).written})).sort((a,b)=>b.w-a.w):[];
+  return `<div class="narrow"><h1>Progress</h1>
+   <div class="tiles"><div class="tile"><b>${num(W)}</b><span>total words</span></div><div class="tile"><b>${num(mine.week)}</b><span>words this week</span></div><div class="tile"><b>${num(mine.month)}</b><span>words this month</span></div><div class="tile"><b>🔥 ${mine.cur}</b><span>day streak</span></div><div class="tile"><b>${mine.longest}</b><span>longest streak</span></div><div class="tile"><b>${hrs(mine.time)}</b><span>writing time</span></div><div class="tile"><b>${done} / ${p.chapters.length}</b><span>chapters completed</span></div></div>
+   <section class="sheet"><div class="row" style="justify-content:space-between"><h2>Project progress</h2><span class="mono">${Math.min(100,Math.round(W/t*100))}%</span></div><div class="bar big"><i style="width:${Math.min(100,W/t*100)}%"></i></div><p class="small muted">${num(W)} of ${num(t)} words. Change the target in Settings.</p></section>
+   ${goal}
+   <details class="sheet"><summary><b>More</b></summary><div class="tiles" style="margin-top:12px"><div class="tile"><b>${num(mine.today)}</b><span>words today</span></div><div class="tile"><b>${mine.sessions}</b><span>writing sessions</span></div><div class="tile"><b>${num(mine.avg)}</b><span>average words / session</span></div><div class="tile"><b>${mine.days}</b><span>days you've written</span></div></div></details>
+   ${authors.length>1?`<section class="sheet"><h2>Written together</h2><div class="stack">${authors.map(a=>`<div class="row" style="justify-content:space-between"><span>${who(a.id,true)}</span><span class="mono">${num(a.w)} words</span></div>`).join('')}</div><p class="small muted">Words each author has typed in this project since tracking began. For interest, not a contest.</p></section>`:''}
+   <p class="small muted">Your numbers come from your own typing in this project: words added, active time (pauses under a minute), and a new session after ten minutes away. Pasted or imported text doesn't count as written. Missing a day only resets the streak; nothing else.</p></div>`}
+
+// ---------- SETTINGS ----------
+const GOALS=[['','No goal'],['500:day','500 words a day'],['1000:day','1,000 words a day'],['5000:week','5,000 words a week'],['10000:week','10,000 words a week'],['custom','Custom']];
+function vSettings(p){const g=p.settings.goal||pref('global').goal;const gv=g&&g.n?`${g.n}:${g.per}`:'';const isStd=GOALS.some(x=>x[0]===gv);const owner=myRole(p)==='owner';
+  return `<div class="narrow"><h1>Settings</h1>
+  <section class="sheet stack"><h2>Project</h2><label class="f" for="setName">Name<input id="setName" data-set="name" value="${esc(p.name)}" ${allowed(p,'edit')?'':'readonly'}></label><label class="f" for="setTarget">Target length (words)<input id="setTarget" type="number" min="1000" step="1000" data-set="target" value="${+p.settings.target||80000}"></label></section>
+  <section class="sheet stack"><h2>Writing goal</h2><label class="f" for="goalSel">Goal<select id="goalSel">${GOALS.map(([v,l])=>`<option value="${v}" ${(isStd?gv===v:v==='custom')?'selected':''}>${l}</option>`).join('')}</select></label>
+   <div class="formgrid" id="goalCustom" ${isStd?'hidden':''}><label class="f" for="gN">Words<input id="gN" type="number" min="50" step="50" value="${g&&g.n||750}"></label><label class="f" for="gP">Per<select id="gP"><option value="day" ${g&&g.per==='day'?'selected':''}>day</option><option value="week" ${g&&g.per==='week'?'selected':''}>week</option></select></label></div><p class="small muted">Goals are just for you; collaborators don't see them.</p></section>
+  <section class="sheet stack"><h2>Appearance</h2><div class="row">${[['auto','Match device'],['light','Light'],['dark','Dark']].map(([k,l])=>`<button class="btn sm" aria-pressed="${(S.theme||'auto')===k}" data-act="theme" data-k="${k}">${l}</button>`).join('')}</div><div class="row"><span class="small muted">Text size</span><button class="btn sm" data-act="font" data-d="-1">A−</button><button class="btn sm" data-act="font" data-d="1">A＋</button></div></section>
+  ${p.cloud?`<section class="sheet stack"><h2>Collaborators</h2><div id="peopleList">${peopleHTML(p)}</div>
+    <div class="stack"><h3>Invite a co-author</h3><p class="small">Send them this private join link. Opening it adds them to the project; they choose a name, with no account to create.</p><div class="row"><input class="inp mono" readonly value="${esc(linkFor(p.pid))}" style="flex:1;min-width:0" aria-label="Join link"><button class="btn primary" data-act="copyLink">Copy link</button></div><p class="small muted">Anyone who has the link can join and edit, so only send it to people you're writing with.</p></div>
+    ${owner?'':'<button class="btn" data-act="leaveProj">Leave this project</button>'}</section>`:`<section class="sheet stack"><h2>Write with someone</h2><p class="small">Turn this solo project into a collab project. You'll get a join link to send your co-author. Your local copy stays on this device as a backup.</p><div class="row"><button class="btn" data-act="shareProj" ${Cloud.db&&Cloud.me?'':'disabled'}>Make it a collab project</button></div>${Cloud.db&&Cloud.me?'':'<p class="small muted">Needs Firebase set up first (see the setup notes).</p>'}</section>`}
+  <section class="sheet stack"><h2>Manuscript</h2><div class="row">${allowed(p,'edit')?'<button class="btn" data-act="importFile">Import .txt, .md or .docx</button>':''}<button class="btn" data-act="exportMs">Export manuscript</button><button class="btn" data-act="backup">Back up everything</button></div>
+   <p class="small muted">Imported chapters are added after your existing ones; headings like “Chapter 3” or “# Title” start new chapters. ${p.cloud?'Collab projects live in the shared database.':'Solo projects live in this browser, so back up now and then.'}</p>
+   <details><summary class="small">Restore from a backup</summary><textarea class="out" id="restoreIn" rows="4" placeholder="Paste backup text"></textarea><div class="row"><button class="btn sm" data-act="restore">Restore</button></div></details></section>
+  <section class="sheet stack"><h2>Account</h2><p class="small">${Cloud.me?'Co-authors see you as:':'Collab projects aren\'t connected on this copy yet.'}</p>${Cloud.me?`<div class="row"><input class="inp" id="meName" value="${esc(myName())}" placeholder="Your name" style="flex:1;min-width:0" aria-label="Your name"><button class="btn" data-act="renameMe">Save</button></div><p class="small muted">No sign-up: this browser remembers you. On another device, open a join link there and use the same name.</p>`:''}</section>
+  ${owner?`<section class="sheet stack"><h2>Delete</h2><div id="delBox"><button class="btn danger" data-act="delAsk">Delete this project</button></div></section>`:''}</div>`}
+
+// ---------- search ----------
+function searchOpen(){const p=P();openModal(`<div class="mhead"><h2>Search manuscript</h2><button class="btn ghost" data-act="closeModal">Close</button></div><input class="inp" id="srchQ" placeholder="Words or a name" autocomplete="off" value="${esc(UI.search)}"><div id="srchRes" class="stack" style="margin-top:10px"></div>`,isPhone()?'msheet':'');const i=$('#srchQ');i.focus();runSearch()}
+function runSearch(){const p=P();const q=($('#srchQ')||{}).value||'';UI.search=q;const box=$('#srchRes');if(!box)return;if(q.trim().length<2){box.innerHTML='<p class="small muted">Type at least two letters.</p>';return}
+  const ql=q.toLowerCase();let total=0;const out=p.chapters.map((c,i)=>{const t=c.text.toLowerCase();const hits=[];let k=t.indexOf(ql);while(k>=0&&hits.length<50){hits.push(k);k=t.indexOf(ql,k+ql.length)}total+=hits.length;const tm=(c.title||'').toLowerCase().includes(ql);return hits.length||tm?`<div class="sres"><b>${pad(i)} — ${esc(c.title)}</b> <span class="small muted">${hits.length} match${hits.length===1?'':'es'}</span>${hits.slice(0,4).map(h=>`<button class="linkish small hit" data-act="srchGo" data-i="${i}" data-at="${h}" data-len="${q.length}">${esc(ctx(c.text,h,110))}</button>`).join('')}</div>`:''}).join('');
+  box.innerHTML=out?`<p class="small muted">${total} matches</p>${out}`:'<p class="small muted">No matches.</p>'}
+function selectRange(a,b){const ta=$('#ms');if(!ta)return;closeModal();ta.focus();ta.setSelectionRange(a,b);const r=a/Math.max(1,ta.value.length);const top=ta.getBoundingClientRect().top+window.scrollY+ta.offsetHeight*r-window.innerHeight/3;window.scrollTo({top:Math.max(0,top)})}
+
+// ---------- import / export ----------
+async function readFile(file){if(/\.docx$/i.test(file.name)){if(!window.mammoth)throw new Error('The .docx reader didn\'t load. Save the file as .txt and try again.');const r=await mammoth.convertToHtml({arrayBuffer:await file.arrayBuffer()});const d=document.createElement('div');d.innerHTML=r.value;return [...d.children].map(e=>/^H[12]$/.test(e.tagName)?'# '+e.textContent.trim():e.textContent).join('\n\n')}return await file.text()}
+function exportMs(p){return p.chapters.map(c=>`# ${c.title}\n\n${c.text}`).join('\n\n\n')}
+function restore(json){const d=JSON.parse(json);if(d&&d.projects){d.projects.forEach(x=>{if(S.projects.some(y=>y.id===x.id))x.id=uid();S.projects.push(x)});return d.projects.length}throw new Error('That isn\'t a Marginalia backup.')}
+
+// ---------- invitations ----------
+let invSub=null;
+function subInvites(){if(invSub||!Cloud.db||!Cloud.me)return;invSub=Cloud.db.collection('invites').where('to','==',Cloud.me).onSnapshot(s=>{Cloud.invites=s.docs.map(d=>({...d.data(),id:d.id}));if(view==='home')softRender()},()=>{})}
+
+// ================= actions =================
+function curCh(){const p=P();return p&&p.chapters[UI.ch]}
+function openProject(id){UI.panel=null;UI.manage=false;UI.cmp=null;ST.base={};if(id.startsWith('cloud:')){view='write';openCloud(id.slice(6));return}closeCloud();S.active=id;const p=P();UI.ch=lastCh(id);view='write';save();render();window.scrollTo(0,0)}
+function withMentions(id){let s=$('#'+id).value;(UI.mentions||[]).forEach(m=>{s=s.split('@'+m.name).join(`@[${m.name}](${m.id})`)});UI.mentions=[];return s.trim()}
+function updateSummary(p,force){if(!p.cloud)return;if(!force&&p._sumAt&&now()-p._sumAt<30000)return;p._sumAt=now();const c=p.chapters[UI.ch];p.summary={...(p.summary||{}),words:totalWords(p),chapters:p.chapters.length,chNum:UI.ch+1,chTitle:c?String(c.title||'').slice(0,80):'',by:myId(),verb:'edited',target:c?c.title:'',at:now()};scheduleFlush()}
+const ACT={
+ closeModal:()=>closeModal(),
+ copyOut:()=>copyText($('#outText').value),
+ home:()=>{const p=P();if(p&&p.cloud&&!p.loading)updateSummary(p,true);view='home';Cloud.editing=false;closeModal();render();window.scrollTo(0,0)},
+ go:el=>{view=el.dataset.v;closeModal();render();window.scrollTo(0,0)},
+ openProj:el=>openProject(el.dataset.id),
+ newProject:()=>{const cloudOK=Cloud.db&&Cloud.me;openModal(`<div class="mhead"><h2>New project</h2><button class="btn ghost" data-act="closeModal">Cancel</button></div>
+   <div class="choice"><button class="choose" data-act="npType" data-k="solo" aria-pressed="true"><b>📖 Solo project</b><span>A novel you're writing alone. Kept in this browser.</span></button><button class="choose" data-act="npType" data-k="collab" aria-pressed="false" ${cloudOK?'':'disabled'}><b>👥 Collab project</b><span>${cloudOK?'Shared with co-authors through a private join link, synced live on any device.':'Needs Firebase set up first (see the setup notes).'}</span></button></div>
+   <label class="f" for="npName">Project name<input id="npName" placeholder="Working title"></label><div class="row"><button class="btn primary big" data-act="createProject">Create project</button></div>`);UI.npType='solo'},
+ npType:el=>{UI.npType=el.dataset.k;document.querySelectorAll('.choose').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===UI.npType))},
+ createProject:async()=>{const n=($('#npName').value||'').trim()||'Untitled novel';closeModal();if(UI.npType==='collab'){await createSharedProject(n);view='write';render();return}const p=newProject(n);p.chapters.push({id:uid(),title:'Chapter 1',text:'',rev:0,created:now()});S.projects.push(p);openProject(p.id)},
+ // chapters
+ selCh:el=>{UI.ch=+el.dataset.i;UI.cmp=null;Cloud.editing=false;closeModal();render();window.scrollTo(0,0)},
+ addCh:()=>{const p=P();if(!allowed(p,'edit'))return;const c={id:uid(),title:`Chapter ${p.chapters.length+1}`,text:'',rev:0,created:now()};p.chapters.push(c);UI.ch=p.chapters.length-1;touch(p);logAct(p,'added',c.title);closeModal();render();setTimeout(()=>{const t=$('#chTitle');if(t&&!isPhone()){t.focus();t.select()}},50)},
+ manage:()=>{UI.manage=!UI.manage;const p=P();document.querySelectorAll('.chl').forEach(el=>el.outerHTML=chapterList(p));renderPresence()},
+ moveCh:el=>{const p=P(),i=+el.dataset.i,j=i+ +el.dataset.d;if(j<0||j>=p.chapters.length)return;const cur=p.chapters[UI.ch];[p.chapters[i],p.chapters[j]]=[p.chapters[j],p.chapters[i]];UI.ch=p.chapters.indexOf(cur);touch(p);document.querySelectorAll('.chl').forEach(el=>el.outerHTML=chapterList(p))},
+ delCh:el=>{const p=P(),i=+el.dataset.i,c=p.chapters[i];openModal(`<h2>Delete “${esc(c.title)}”?</h2><p class="muted">${num(wc(c.text))} words. A copy is kept in History.</p><div class="row"><button class="btn danger" data-act="delChYes" data-i="${i}">Delete chapter</button><button class="btn" data-act="closeModal">Cancel</button></div>`)},
+ delChYes:el=>{const p=P(),i=+el.dataset.i,c=p.chapters[i];if(p.cloud)deleteChapterCloud(p,c);else colAdd(p,'versions',{ch:c.id,title:c.title,text:c.text,label:'Before deletion',kind:'deleted',by:myId(),at:now()});p.chapters.splice(i,1);if(!p.chapters.length)p.chapters.push({id:uid(),title:'Chapter 1',text:'',rev:0,created:now()});UI.ch=clamp(UI.ch>=i?UI.ch-1:UI.ch,0,p.chapters.length-1);touch(p);closeModal();render()},
+ renameCh:()=>{const c=curCh();openModal(`<h2>Rename chapter</h2><label class="f" for="rnT">Title<input id="rnT" value="${esc(c.title)}"></label><div class="row"><button class="btn primary" data-act="renameSave">Save</button><button class="btn" data-act="closeModal">Cancel</button></div>`);setTimeout(()=>$('#rnT').focus(),50)},
+ renameSave:()=>{const p=P(),c=curCh();c.title=$('#rnT').value.trim()||c.title;touch(p);closeModal();render()},
+ complete:()=>{const p=P(),c=curCh();c.status=c.status==='complete'?'':'complete';touch(p);if(c.status)logAct(p,'completed',c.title);closeModal();render()},
+ font:el=>{const p=P();setPersonal(p,'fontSize',clamp((p.settings.fontSize||(isPhone()?19:18))+ +el.dataset.d,14,28));const ta=$('#ms');if(ta){ta.style.fontSize=p.settings.fontSize+'px';autoGrow(ta)}},
+ panel:el=>{UI.panel=UI.panel===el.dataset.k?null:el.dataset.k;render()},
+ sheet:el=>sheet(el.dataset.k),
+ search:()=>searchOpen(),
+ srchGo:el=>{UI.ch=+el.dataset.i;view='write';closeModal();render();const a=+el.dataset.at;setTimeout(()=>selectRange(a,a+ +el.dataset.len),30)},
+ // comments
+ cmNew:()=>{const ta=$('#ms');const s=UI.lastSel;if(!ta||!s){toast('Select some text first');return}const [a,b]=s;UI.pend={a,b,quote:ta.value.slice(a,b),prefix:ta.value.slice(Math.max(0,a-40),a)};UI.mentions=[];openModal(`<div class="mhead"><h2>Comment</h2><button class="btn ghost" data-act="closeModal">Cancel</button></div><p class="excerpt"><q>${esc(snip(UI.pend.quote,240))}</q></p>${composer('cmBody','Your comment')}<div class="row"><button class="btn primary" data-act="cmSave">Post</button></div>`,isPhone()?'msheet':'')},
+ cmSave:()=>{const p=P(),c=curCh(),s=UI.pend;const body=withMentions('cmBody');if(!body){toast('Write the comment first');return}const ms=mentionIds(body);colAdd(p,'comments',{ch:c.id,chTitle:c.title,quote:s.quote,prefix:s.prefix,start:s.a,end:s.b,body,by:myId(),at:now(),resolved:false,replies:[],mentions:ms});ms.forEach(id=>notify(p,id,`mentioned you in a comment on ${c.title}`,{chId:c.id}));logAct(p,'commented on',c.title);closeModal();if(!isPhone())UI.panel='comments';render()},
+ cmGo:el=>{const p=P(),c=curCh();const x=colList(p,'comments').find(o=>o.id===el.dataset.id);if(!x)return;const i=anchorOf(c.text,x);if(i<0){toast('That passage has changed since the comment was made');return}selectRange(i,i+x.quote.length)},
+ cmReply:el=>{UI.mentions=[];const box=$('#cmx_'+el.dataset.id);if(box)box.innerHTML=composer('rp_'+el.dataset.id,'Reply')+`<div class="row"><button class="btn sm primary" data-act="cmReplySave" data-id="${el.dataset.id}">Reply</button></div>`},
+ cmReplySave:el=>{const p=P();const x=colList(p,'comments').find(o=>o.id===el.dataset.id);if(!x)return;const body=withMentions('rp_'+x.id);if(!body)return;colUpdate(p,'comments',x.id,{replies:[...(x.replies||[]),{by:myId(),at:now(),body}]});notify(p,x.by,`replied to your comment on ${x.chTitle||'a chapter'}`,{chId:x.ch});mentionIds(body).forEach(id=>notify(p,id,`mentioned you in a reply on ${x.chTitle||'a chapter'}`,{chId:x.ch}));logAct(p,'replied to a comment on',x.chTitle||'')},
+ cmResolve:el=>{const p=P();const x=colList(p,'comments').find(o=>o.id===el.dataset.id);if(!x)return;colUpdate(p,'comments',x.id,{resolved:!x.resolved,resolvedBy:myId(),resolvedAt:now()})},
+ cmDel:el=>{const b=$('#cmx_'+el.dataset.id);if(b&&!b.dataset.ask){b.dataset.ask=1;b.innerHTML=`<div class="row"><span class="small">Delete this comment?</span><button class="btn sm danger" data-act="cmDel" data-id="${el.dataset.id}">Delete</button></div>`;return}colDel(P(),'comments',el.dataset.id)},
+ mentionPick:el=>{const t=$('#'+el.dataset.for);if(!t)return;const pos=t.selectionStart;const before=t.value.slice(0,pos).replace(/@([^@\n]{0,30})$/,'@'+el.dataset.name+' ');t.value=before+t.value.slice(pos);t.focus();t.setSelectionRange(before.length,before.length);(UI.mentions=UI.mentions||[]).push({name:el.dataset.name,id:el.dataset.id});$('#'+el.dataset.for+'_m').innerHTML=''},
+ // history & conflicts
+ verSave:()=>{const p=P(),c=curCh();colAdd(p,'versions',{ch:c.id,title:c.title,text:c.text,label:'Saved by hand',kind:'manual',by:myId(),at:now()});toast('Version saved');const d=$('#drawer .dbody');if(d)d.innerHTML=historyBody(p,c)},
+ vCmp:el=>{UI.cmp=el.dataset.id||null;const p=P(),c=curCh();const d=$('#drawer .dbody')||$('#modalRoot .box');if($('#drawer .dbody'))$('#drawer .dbody').innerHTML=historyBody(p,c);else sheet('history');resolveNames()},
+ vRestore:el=>{const box=$('#vx_'+el.dataset.id);if(box&&!box.dataset.ask){box.dataset.ask=1;box.innerHTML=`<div class="row"><span class="small">Replace the chapter with this version? The current text is saved first.</span><button class="btn sm danger" data-act="vRestore" data-id="${el.dataset.id}">Restore</button></div>`;return}
+   const p=P();const v=colList(p,'versions').find(x=>x.id===el.dataset.id);const c=p.chapters.find(x=>x.id===v.ch);if(!c)return;colAdd(p,'versions',{ch:c.id,title:c.title,text:c.text,label:'Before restore',kind:'auto',by:myId(),at:now()});c.text=v.text;c.rev=(c.rev||0)+1;ST.base[c.id]=c.text;touch(p);logAct(p,'restored an earlier version of',c.title);closeModal();UI.cmp=null;render();toast('Restored')},
+ cfShow:()=>showConflict(),
+ cfMine:()=>resolveConflict(Cloud.conflict.mine),
+ cfTheirs:()=>resolveConflict(Cloud.conflict.theirs),
+ cfMerge:()=>{const k=Cloud.conflict;const m=merge3(k.base,k.mine,k.theirs);$('#cfManualBox').innerHTML=`<p class="small">${m.clean?'Both sets of changes fit together. Check it and save.':'Some lines were changed by both of you. They are marked <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; MINE</code> / <code>=======</code> / <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt; THEIRS</code>. Keep what you want and delete the markers.'}</p><textarea class="out" id="cfText">${esc(m.text)}</textarea><div class="row"><button class="btn primary" data-act="cfManualSave">Save merged version</button></div>`},
+ cfManual:()=>ACT.cfMerge(),
+ cfManualSave:()=>{const t=$('#cfText').value;if(/^(<<<<<<< MINE|=======|>>>>>>> THEIRS)$/m.test(t)){toast('Remove the conflict markers first');return}resolveConflict(t)},
+ // settings
+ theme:el=>{S.theme=el.dataset.k;applyTheme();save();render()},
+ shareProj:()=>shareProject(P()),
+ importFile:()=>{$('#fileIn').value='';$('#fileIn').click()},
+ exportMs:()=>showText('Manuscript',exportMs(P())),
+ backup:()=>showText('Backup',JSON.stringify({app:'marginalia',v:2,projects:S.projects},(k,v)=>k.startsWith('_')?undefined:v)),
+ restore:()=>{try{const n=restore($('#restoreIn').value);save();view='home';render();toast(`Restored ${plural(n,'project')}`)}catch(e){toast(/JSON/.test(e.message)?'That text isn\'t a valid backup.':e.message)}},
+ delAsk:()=>{$('#delBox').innerHTML=`<p class="small">Delete “${esc(P().name)}”${P().cloud?' for everyone? It disappears from every collaborator\'s list; its data is kept in the database.':'? This can\'t be undone, so export a backup first if unsure.'}</p><div class="row"><button class="btn danger" data-act="delYes">Delete project</button><button class="btn" data-act="go" data-v="settings">Cancel</button></div>`},
+ delYes:()=>{const p=P();if(p.cloud){Cloud.db.doc('projects/'+p.pid).update({deleted:true,deletedAt:now()}).catch(()=>{});closeCloud()}else S.projects=S.projects.filter(x=>x.id!==p.id);S.active=null;view='home';save();render();toast('Project deleted')},
+ leaveProj:()=>{const p=P();Cloud.db.doc('projects/'+p.pid).update({members:{[Cloud.me]:{role:'left',left:now()}}}).catch(()=>{});closeCloud();S.active=null;view='home';save();render()},
+ codeNew:()=>{const p=P();const code=Math.random().toString(36).slice(2,8).toUpperCase();Cloud.db.doc('projects/'+p.pid).update({inviteCode:code}).then(()=>{p.inviteCode=code;render()}).catch(()=>toast('Could not create a code'))},
+ codeOff:()=>{const p=P();Cloud.db.doc('projects/'+p.pid).update({inviteCode:''}).then(()=>{p.inviteCode='';render()})},
+ invite:el=>{const p=P();colAddInvite(p,el.dataset.id,el.dataset.name)},
+ invAccept:el=>{const i=(Cloud.invites||[]).find(x=>x.id===el.dataset.id);if(!i)return;Cloud.db.doc('projects/'+i.pid).update({members:{[Cloud.me]:{role:i.role||'co-author',joined:now(),lastSeen:now()}}}).then(()=>{Cloud.db.doc('invites/'+i.id).update({status:'accepted',at2:now()});openProject('cloud:'+i.pid);setTimeout(()=>Cloud.p&&logAct(Cloud.p,'joined the project',''),1500)}).catch(()=>toast('Could not join. Ask the owner to share the page with you as an editor.'))},
+ invDecline:el=>{Cloud.db.doc('invites/'+el.dataset.id).update({status:'declined'}).catch(()=>{})},
+ joinCode:()=>openModal(`<div class="mhead"><h2>Join a collab project</h2><button class="btn ghost" data-act="closeModal">Cancel</button></div><label class="f" for="jc">Code from the project owner<input id="jc" class="mono" autocapitalize="characters" autocomplete="off"></label><div class="row"><button class="btn primary" data-act="joinGo">Join</button></div>`),
+ joinGo:()=>{const code=($('#jc').value||'').trim().toUpperCase();const x=Cloud.list.find(y=>y.inviteCode&&y.inviteCode===code);if(!x){toast('No project uses that code');return}Cloud.db.doc('projects/'+x.pid).update({members:{[Cloud.me]:{role:x.joinRole||'co-author',joined:now(),lastSeen:now()}}}).then(()=>{closeModal();openProject('cloud:'+x.pid);setTimeout(()=>Cloud.p&&logAct(Cloud.p,'joined the project',''),1500)}).catch(()=>toast('Could not join. Ask the owner to share the page with you as an editor.'))}
+};
+async function colAddInvite(p,id,name){if(p.members&&p.members[id]&&p.members[id].role!=='left'){toast(`${name} is already in this project`);return}try{await Cloud.db.collection('invites').doc(uid()+uid()).set({pid:p.pid,pname:p.name,to:id,from:Cloud.me,role:'co-author',status:'pending',at:now()});toast(`Invitation sent to ${name}`);$('#invQ').value='';$('#invRes').innerHTML=''}catch(e){toast('Could not send the invitation')}}
+
+// ================= listeners =================
+document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el)return;const a=el.dataset.act;if(a==='closeModal'&&el.classList.contains('modal')&&e.target!==el)return;if(el.tagName==='INPUT'||el.tagName==='SELECT')return;const f=ACT[a];if(f){e.preventDefault();f(el,e)}});
+let dragI=null;
+document.addEventListener('dragstart',e=>{const li=e.target.closest&&e.target.closest('.chl li');if(!li)return;dragI=+li.dataset.i;e.dataTransfer.effectAllowed='move';li.classList.add('dragging')});
+document.addEventListener('dragover',e=>{const li=e.target.closest&&e.target.closest('.chl li');if(li&&dragI!==null){e.preventDefault();document.querySelectorAll('.chl li').forEach(x=>x.classList.toggle('over',x===li))}});
+document.addEventListener('drop',e=>{const li=e.target.closest&&e.target.closest('.chl li');if(!li||dragI===null)return;e.preventDefault();const p=P(),to=+li.dataset.i;if(to!==dragI){const cur=p.chapters[UI.ch];const [m]=p.chapters.splice(dragI,1);p.chapters.splice(to,0,m);UI.ch=p.chapters.indexOf(cur);touch(p);render()}dragI=null});
+document.addEventListener('dragend',()=>{dragI=null;document.querySelectorAll('.chl li').forEach(x=>x.classList.remove('over','dragging'))});
+document.addEventListener('change',e=>{const el=e.target;const p=P();
+  if(el.dataset&&el.dataset.set){if(el.dataset.set==='name'){p.name=el.value.trim()||p.name}else p.settings[el.dataset.set]=+el.value||el.value;touch(p);if(p.cloud)updateSummary(p,true);return}
+  if(el.id==='goalSel'){if(el.value==='custom'){$('#goalCustom').hidden=false;return}$('#goalCustom').hidden=true;const [n,per]=el.value.split(':');setPersonal(p,'goal',n?{n:+n,per}:null);pref('global').goal=n?{n:+n,per}:null;save();return}
+  if(el.id==='gN'||el.id==='gP'){const g={n:+$('#gN').value||500,per:$('#gP').value};setPersonal(p,'goal',g);pref('global').goal=g;save();return}
+});
+document.addEventListener('input',e=>{const el=e.target;const p=P();
+  if(el.id==='ms'){const c=p.chapters[UI.ch];if(!c||!canEditText(p))return;c.text=el.value;c.rev=(c.rev||0)+1;p.updated=now();save();outboxSoon(p,c);autoGrow(el);UI.caret=el.selectionStart;
+    const w=$('#wcount');if(w)w.textContent=`${num(wc(c.text))} words`;statTick(p);clearTimeout(UI.swT);UI.swT=setTimeout(()=>statWords(p,c),2000);updateSummary(p);
+    if(!Cloud.typing){Cloud.typing=true;Cloud.editing=true;pushPresence()}clearTimeout(UI.tyT);UI.tyT=setTimeout(()=>{Cloud.typing=false;pushPresence()},3000);return}
+  if(el.id==='chTitle'){if(!allowed(p,'edit'))return;p.chapters[UI.ch].title=el.value;touch(p);const b=document.querySelector(`.chl .chi[data-i="${UI.ch}"] .t`);if(b)b.firstChild.textContent=el.value||'Untitled';return}
+  if(el.id==='srchQ'){clearTimeout(UI.sT);UI.sT=setTimeout(runSearch,150);return}
+  if(el.classList.contains('composer')){const pos=el.selectionStart;const m=el.value.slice(0,pos).match(/@([^@\n]{0,30})$/);const box=$('#'+el.id+'_m');if(!box)return;if(!m||!Cloud.user){box.innerHTML='';return}const ids=Object.keys(p.members||{}).concat(p.owner?[p.owner]:[]).filter(i=>i!==Cloud.me);Cloud.user.profiles(ids).then(ps=>{const q=m[1].toLowerCase();box.innerHTML=ids.filter(i=>(ps[i].name||'').toLowerCase().startsWith(q)).map(i=>`<button class="btn sm" data-act="mentionPick" data-for="${el.id}" data-id="${esc(i)}" data-name="${esc(ps[i].name)}">@${esc(ps[i].name)}</button>`).join('')});return}
+  if(el.id==='invQ'){const q=el.value.trim();if(!Cloud.user||q.length<1){$('#invRes').innerHTML='';return}Cloud.user.search(q).then(h=>{$('#invRes').innerHTML=h.filter(x=>x.id!==Cloud.me).map(x=>`<button class="btn sm" data-act="invite" data-id="${esc(x.id)}" data-name="${esc(x.name)}">Invite ${esc(x.name)}</button>`).join('')||'<span class="small muted">No one found. Use a join code instead.</span>'});return}
+});
+let obT;function outboxSoon(p,c){if(!p.cloud)return;clearTimeout(obT);obT=setTimeout(()=>outboxPut(p,c),300)}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#modalRoot').innerHTML)closeModal();if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='f'&&view==='write'){e.preventDefault();searchOpen()}});
+document.addEventListener('focusin',e=>{if(e.target.id==='ms'){Cloud.editing=true;pushPresence()}});
+document.addEventListener('focusout',e=>{if(e.target.id==='ms'){setTimeout(()=>{if(document.activeElement&&document.activeElement.id==='ms')return;Cloud.editing=false;pushPresence()},300)}});
+$('#fileIn').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const t=await readFile(f);if(/\.json$/i.test(f.name)){const n=restore(t);save();view='home';render();toast(`Restored ${plural(n,'project')}`);return}const p=P();const chs=splitChapters(t).map(c=>({id:uid(),title:c.title,text:c.text,rev:0,created:now()}));p.chapters=p.chapters.filter(c=>c.text.trim()||p.chapters.length>1).concat(chs);if(!p.chapters.length)p.chapters=chs;touch(p);UI.ch=p.chapters.length-chs.length;view='write';render();toast(`Imported ${plural(chs.length,'chapter')}`)}catch(err){toast(err.message||'Could not read that file')}});
+
+// ================= init =================
+S=loadState();
+if(!S)S={v:2,projects:[],active:null,prefs:{}};
+S.prefs=S.prefs||{};
+if(!S.sampleRemoved){S.projects=S.projects.filter(p=>!(p.sample===true||p.name==='The Salt Ledger (sample)'));if(S.active&&!S.active.startsWith('cloud:')&&!S.projects.some(p=>p.id===S.active))S.active=null;S.sampleRemoved=true;save()}
+S.projects.forEach(p=>{const d=newProject('');p.mem={...d.mem,...(p.mem||{})};p.settings={...d.settings,...(p.settings||{})};p.consequences=p.consequences||[];p.ideas=p.ideas||[];p.sceneNotes=p.sceneNotes||{};p.cols=p.cols||{};p.chapters=p.chapters||[];const pr=S.prefs[p.id]||{};['fontSize','goal'].forEach(k=>{if(pr[k]!==undefined)p.settings[k]=pr[k]})});
+applyTheme();
+view='home';
+render();initCloud();
+window.matchMedia('(max-width: 760px)').addEventListener('change',()=>render());
+if(window.visualViewport){const vv=window.visualViewport;const fix=()=>{const b=document.querySelector('.m-bar');if(b)b.style.transform=`translateY(${-(window.innerHeight-vv.height-vv.offsetTop)}px)`};vv.addEventListener('resize',fix);vv.addEventListener('scroll',fix)}
+
+// ================= standalone web version: join links instead of Claude sign-in =================
+function myName(){return (S&&S.name)||''}
+function addCollab(pid,name){S.collabs=S.collabs||[];if(!S.collabs.some(c=>c.pid===pid))S.collabs.push({pid,name});save();watchProject(pid)}
+const watched={};
+function subscribeProjects(){if(!Cloud.db||!Cloud.me)return;(S.collabs||[]).forEach(c=>watchProject(c.pid));Cloud.listReady=true;
+  if(S.active&&S.active.startsWith('cloud:')&&!Cloud.p){const pid=S.active.slice(6);if((S.collabs||[]).some(c=>c.pid===pid))openCloud(pid);else{S.active=null;view='home';save()}}renderProjSel()}
+function subInvites(){}
+function watchProject(pid){if(watched[pid]||!Cloud.db)return;
+  watched[pid]=Cloud.db.doc('projects/'+pid).onSnapshot(d=>{const i=Cloud.list.findIndex(x=>x.pid===pid);
+    if(!d.exists){if(i>=0)Cloud.list.splice(i,1);renderProjSel();return}
+    const m={pid,...d.data()};const gone=m.deleted||(m.members&&m.members[Cloud.me]&&m.members[Cloud.me].role==='left');
+    if(gone){if(i>=0)Cloud.list.splice(i,1);S.collabs=(S.collabs||[]).filter(c=>c.pid!==pid);save()}else if(i>=0)Cloud.list[i]=m;else Cloud.list.push(m);
+    Object.entries(m.members||{}).forEach(([id,v])=>{if(v&&v.name)Cloud.names[id]=v.name});
+    if(S.active==='cloud:'+pid&&!Cloud.p&&!gone)openCloud(pid);
+    renderProjSel();resolveNames()},()=>{});
+  window.__watchPresence&&window.__watchPresence(pid)}
+function askName(then){if(myName()){then();return}UI.afterName=then;openModal(`<div class="mhead"><h2>What should co-authors call you?</h2><button class="btn ghost" data-act="closeModal">Cancel</button></div><label class="f" for="myName">Your name<input id="myName" autocomplete="name"></label><div class="row"><button class="btn primary" data-act="nameSave">Continue</button></div>`)}
+function linkFor(pid){return location.origin+location.pathname+'#join='+pid}
+async function joinPid(pid){pid=String(pid||'').trim();if(!/^[a-z0-9]{20,}$/.test(pid)){toast('That isn\'t a Marginalia join link');return}
+  askName(async()=>{try{const d=await Cloud.db.doc('projects/'+pid).get();if(!d.exists){toast('No project found for that link');return}const m=d.data();if(m.deleted){toast('That project was deleted');return}
+    if(!(m.members&&m.members[Cloud.me]&&m.members[Cloud.me].role!=='left'))await Cloud.db.doc('projects/'+pid).update({members:{[Cloud.me]:{role:'co-author',joined:now(),lastSeen:now(),name:myName()}}});
+    addCollab(pid,m.name);closeModal();openProject('cloud:'+pid);setTimeout(()=>Cloud.p&&logAct(Cloud.p,'joined the project',''),1500)}catch(e){toast('Could not join: '+((e&&e.code)||'error'))}})}
+async function saveNameEverywhere(){for(const x of Cloud.list){if(x.members&&x.members[Cloud.me])try{await Cloud.db.doc('projects/'+x.pid).update({members:{[Cloud.me]:{name:myName()}}})}catch(e){}}Cloud.names[Cloud.me]=myName();resolveNames()}
+Object.assign(ACT,{
+ nameSave:()=>{const n=($('#myName').value||'').trim();if(!n){toast('Type a name');return}S.name=n;save();Cloud.names[Cloud.me]=n;const f=UI.afterName;UI.afterName=null;closeModal();f&&f()},
+ joinLinkAsk:()=>openModal(`<div class="mhead"><h2>Join a collab project</h2><button class="btn ghost" data-act="closeModal">Cancel</button></div><label class="f" for="jl">Paste the join link you were sent<input id="jl" autocomplete="off" placeholder="https://…#join=…"></label><div class="row"><button class="btn primary" data-act="joinLinkGo">Join</button></div>`),
+ joinLinkGo:()=>{const v=$('#jl').value;const m=v.match(/join=([a-z0-9]+)/)||v.match(/^([a-z0-9]{20,})$/);closeModal();joinPid(m?m[1]:'')},
+ copyLink:()=>copyText(linkFor(P().pid)),
+ renameMe:()=>{const n=($('#meName').value||'').trim();if(!n)return;S.name=n;save();saveNameEverywhere();toast('Name updated')},
+ createProject:async()=>{const n=($('#npName').value||'').trim()||'Untitled novel';closeModal();if(UI.npType==='collab'){askName(async()=>{await createSharedProject(n);view='write';render()});return}const p=newProject(n);p.chapters.push({id:uid(),title:'Chapter 1',text:'',rev:0,created:now()});S.projects.push(p);openProject(p.id)},
+ shareProj:()=>askName(()=>shareProject(P()))
+});
+// join links: #join=<project id>
+function checkJoinHash(){const m=location.hash.match(/join=([a-z0-9]+)/);if(!m)return;history.replaceState(null,'',location.pathname+location.search);const go=()=>{if(Cloud.db&&Cloud.me)joinPid(m[1]);else if(Cloud.dbState==='absent')toast('This copy of Marginalia isn\'t connected to Firebase yet');else setTimeout(go,300)};go()}
+checkJoinHash();window.addEventListener('hashchange',checkJoinHash);
+
+</script>
+</body></html>
